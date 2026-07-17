@@ -1,0 +1,1065 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CropIQ — Smart Farming Intelligence</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ─── Design Tokens ─────────────────────────────── */
+      :root {
+        --soil: #1a1208;
+        --bark: #2e1f0e;
+        --moss: #2d4a1e;
+        --leaf: #4a7c35;
+        --sprout: #7db65a;
+        --sun: #e8c84a;
+        --cream: #f5f0e8;
+        --mist: #eaf3e4;
+        --text: #1a1208;
+        --muted: #6b5c40;
+        --card-bg: #ffffffcc;
+        --radius: 16px;
+      }
+
+      /* ─── Reset & Base ──────────────────────────────── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "DM Sans", sans-serif;
+        background-color: var(--mist);
+        color: var(--text);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* ─── Animated background ───────────────────────── */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(
+            ellipse 80% 60% at 10% 20%,
+            #c8e6b055 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse 60% 80% at 90% 80%,
+            #a3d97055 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse 40% 40% at 50% 50%,
+            #e8c84a22 0%,
+            transparent 70%
+          );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ─── Layout wrapper ────────────────────────────── */
+      .page {
+        position: relative;
+        z-index: 1;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 48px 24px 80px;
+      }
+
+      /* ─── Header ────────────────────────────────────── */
+      header {
+        text-align: center;
+        margin-bottom: 52px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--moss);
+        color: var(--sprout);
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 6px 14px;
+        border-radius: 100px;
+        margin-bottom: 20px;
+      }
+
+      .badge::before {
+        content: "●";
+        font-size: 8px;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      h1 {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(2.4rem, 6vw, 4rem);
+        font-weight: 900;
+        line-height: 1.1;
+        color: var(--soil);
+        letter-spacing: -0.02em;
+        margin-bottom: 14px;
+      }
+
+      h1 span {
+        color: var(--leaf);
+      }
+
+      .subtitle {
+        font-size: 1rem;
+        color: var(--muted);
+        max-width: 460px;
+        margin: 0 auto;
+        line-height: 1.6;
+        font-weight: 300;
+      }
+
+      /* ─── Two-column layout ─────────────────────────── */
+      .main-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+        align-items: start;
+      }
+
+      @media (max-width: 720px) {
+        .main-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ─── Card ──────────────────────────────────────── */
+      .card {
+        background: var(--card-bg);
+        backdrop-filter: blur(12px);
+        border-radius: var(--radius);
+        border: 1px solid #d4e8c488;
+        padding: 36px;
+        box-shadow:
+          0 8px 40px #2d4a1e14,
+          0 2px 8px #0000000a;
+      }
+
+      .card-title {
+        font-family: "Playfair Display", serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--soil);
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .card-title::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: linear-gradient(to right, #4a7c3530, transparent);
+      }
+
+      /* ─── Form fields ───────────────────────────────── */
+      .field {
+        margin-bottom: 18px;
+      }
+
+      label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+
+      .field-icon {
+        width: 20px;
+        height: 20px;
+        border-radius: 6px;
+        background: var(--moss);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+      }
+
+      input[type="number"] {
+        width: 100%;
+        padding: 11px 16px;
+        border: 1.5px solid #c8dcb8;
+        border-radius: 10px;
+        background: #f9fcf6;
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.95rem;
+        color: var(--text);
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        outline: none;
+        -moz-appearance: textfield;
+      }
+
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+      }
+
+      input[type="number"]:focus {
+        border-color: var(--leaf);
+        box-shadow: 0 0 0 3px #4a7c3518;
+        background: #fff;
+      }
+
+      /* ─── Range slider ──────────────────────────────── */
+      .range-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      input[type="range"] {
+        flex: 1;
+        height: 4px;
+        border-radius: 10px;
+        accent-color: var(--leaf);
+        cursor: pointer;
+      }
+
+      .range-val {
+        min-width: 44px;
+        text-align: right;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--leaf);
+      }
+
+      /* ─── Submit button ─────────────────────────────── */
+      .btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, var(--moss), var(--leaf));
+        color: #fff;
+        border: none;
+        border-radius: 12px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition:
+          transform 0.15s,
+          box-shadow 0.15s,
+          filter 0.15s;
+        margin-top: 8px;
+        letter-spacing: 0.02em;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px #4a7c3540;
+        filter: brightness(1.08);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      /* ─── Result box ────────────────────────────────── */
+      .result-box {
+        margin-top: 20px;
+        padding: 18px 22px;
+        border-radius: 12px;
+        font-weight: 500;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        animation: slideUp 0.4s ease;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .result-success {
+        background: #edf7e7;
+        border: 1.5px solid #a3d270;
+        color: var(--moss);
+      }
+
+      .result-error {
+        background: #fff4ed;
+        border: 1.5px solid #f5a77a;
+        color: #8c3a00;
+      }
+
+      .result-crop {
+        font-family: "Playfair Display", serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+      }
+
+      /* ─── Soil stats panel ──────────────────────────── */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .stat-chip {
+        background: var(--mist);
+        border-radius: 10px;
+        padding: 12px 10px;
+        text-align: center;
+        border: 1px solid #d0e8c0;
+      }
+
+      .stat-chip .val {
+        font-family: "Playfair Display", serif;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--leaf);
+        display: block;
+      }
+
+      .stat-chip .lbl {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+
+      /* ─── Charts section ────────────────────────────── */
+      .charts-section {
+        margin-top: 64px;
+      }
+
+      .section-head {
+        text-align: center;
+        margin-bottom: 36px;
+      }
+
+      .section-head h2 {
+        font-family: "Playfair Display", serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--soil);
+      }
+
+      .section-head p {
+        color: var(--muted);
+        font-size: 0.9rem;
+        margin-top: 6px;
+      }
+
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
+      }
+
+      .chart-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        border-radius: var(--radius);
+        border: 1px solid #d4e8c488;
+        overflow: hidden;
+        box-shadow: 0 4px 20px #2d4a1e0d;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+
+      .chart-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 32px #2d4a1e1a;
+      }
+
+      .chart-label {
+        padding: 12px 16px 4px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--muted);
+      }
+
+      .chart-card img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-top: 1px solid #e8f0e0;
+      }
+
+      /* ─── Charts placeholder (before first prediction) ── */
+      .charts-placeholder {
+        text-align: center;
+        padding: 48px 24px;
+        background: var(--card-bg);
+        border-radius: var(--radius);
+        border: 1.5px dashed #b0d090;
+        color: var(--muted);
+      }
+
+      .charts-placeholder .ph-icon {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 12px;
+      }
+
+      .charts-placeholder p {
+        font-size: 0.95rem;
+        line-height: 1.6;
+      }
+
+      .charts-placeholder strong {
+        color: var(--leaf);
+      }
+
+      /* ─── Chatbot ────────────────────────────────────── */
+      .chat-fab {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        z-index: 100;
+      }
+
+      #chat-toggle {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--moss), var(--leaf));
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 4px 20px #2d4a1e44;
+        transition: transform 0.2s;
+      }
+
+      #chat-toggle:hover {
+        transform: scale(1.08);
+      }
+
+      .chat-window {
+        position: fixed;
+        bottom: 100px;
+        right: 28px;
+        width: 320px;
+        background: #fff;
+        border-radius: 20px;
+        box-shadow: 0 12px 48px #0000001a;
+        border: 1px solid #d4e8c4;
+        z-index: 100;
+        overflow: hidden;
+        display: none;
+        flex-direction: column;
+        max-height: 420px;
+      }
+
+      .chat-window.open {
+        display: flex;
+        animation: popIn 0.25s ease;
+      }
+
+      @keyframes popIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9) translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      .chat-header {
+        background: linear-gradient(135deg, var(--moss), var(--leaf));
+        color: #fff;
+        padding: 14px 18px;
+        font-weight: 500;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .chat-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--sun);
+        animation: pulse 1.5s infinite;
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .msg {
+        max-width: 80%;
+        padding: 9px 13px;
+        border-radius: 14px;
+        font-size: 0.88rem;
+        line-height: 1.45;
+      }
+
+      .msg.bot {
+        background: var(--mist);
+        border-bottom-left-radius: 4px;
+        align-self: flex-start;
+      }
+
+      .msg.user {
+        background: var(--leaf);
+        color: #fff;
+        border-bottom-right-radius: 4px;
+        align-self: flex-end;
+      }
+
+      .chat-input-row {
+        display: flex;
+        padding: 10px;
+        gap: 8px;
+        border-top: 1px solid #eaf3e4;
+      }
+
+      .chat-input-row input {
+        flex: 1;
+        border: 1.5px solid #c8dcb8;
+        border-radius: 20px;
+        padding: 8px 14px;
+        font-family: "DM Sans", sans-serif;
+        font-size: 0.88rem;
+        outline: none;
+      }
+
+      .chat-input-row input:focus {
+        border-color: var(--leaf);
+      }
+
+      .chat-send {
+        background: var(--leaf);
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        color: #fff;
+        cursor: pointer;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* ─── Leaf decorator ────────────────────────────── */
+      .deco-leaf {
+        position: fixed;
+        pointer-events: none;
+        opacity: 0.08;
+        font-size: 180px;
+        user-select: none;
+      }
+      .deco-leaf.tl {
+        top: -20px;
+        left: -30px;
+        transform: rotate(-30deg);
+      }
+      .deco-leaf.br {
+        bottom: -20px;
+        right: -30px;
+        transform: rotate(150deg);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Decorative leaves -->
+    <div class="deco-leaf tl">🌿</div>
+    <div class="deco-leaf br">🌿</div>
+
+    <div class="page">
+      <!-- Header -->
+      <header>
+        <div class="badge">🌱 AI-Powered Agriculture</div>
+        <h1>Smart Farming<br /><span>Crop Intelligence</span></h1>
+        <p class="subtitle">
+          Enter your soil & climate parameters to receive an optimized crop
+          recommendation powered by machine learning.
+        </p>
+      </header>
+
+      <!-- Main grid: form + info panel -->
+      <div class="main-grid">
+        <!-- ── Prediction Form ── -->
+        <div class="card">
+          <div class="card-title">🧪 Soil & Climate Parameters</div>
+
+          <form method="POST" action="/">
+            <div class="field">
+              <label><span class="field-icon">N</span>Nitrogen (N)</label>
+              <input
+                type="number"
+                name="nitrogen"
+                placeholder="e.g. 90"
+                min="0"
+                max="200"
+                required
+                value="{{ nitrogen }}"
+              />
+            </div>
+            <div class="field">
+              <label><span class="field-icon">P</span>Phosphorus (P)</label>
+              <input
+                type="number"
+                name="phosphorus"
+                placeholder="e.g. 42"
+                min="0"
+                max="200"
+                required
+                value="{{ phosphorus }}"
+              />
+            </div>
+            <div class="field">
+              <label><span class="field-icon">K</span>Potassium (K)</label>
+              <input
+                type="number"
+                name="potassium"
+                placeholder="e.g. 43"
+                min="0"
+                max="200"
+                required
+                value="{{ potassium }}"
+              />
+            </div>
+            <div class="field">
+              <label><span class="field-icon">🌡</span>Temperature (°C)</label>
+              <input
+                type="number"
+                name="temperature"
+                step="0.1"
+                placeholder="e.g. 25.5"
+                min="-10"
+                max="60"
+                required
+                value="{{ temperature }}"
+              />
+            </div>
+            <div class="field">
+              <label><span class="field-icon">💧</span>Humidity (%)</label>
+              <div class="range-group">
+                <input
+                  type="range"
+                  id="humidity_range"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  oninput="syncRange(this, 'humidity', 'humidity_val')"
+                />
+                <input
+                  type="number"
+                  id="humidity"
+                  name="humidity"
+                  step="0.1"
+                  placeholder="e.g. 80"
+                  min="0"
+                  max="100"
+                  required
+                  value="{{ humidity }}"
+                  style="width: 90px"
+                  oninput="syncNum(this, 'humidity_range', 'humidity_val')"
+                />
+                <span class="range-val" id="humidity_val"
+                  >{{ humidity or '—' }}</span
+                >
+              </div>
+            </div>
+            <div class="field">
+              <label><span class="field-icon">🧫</span>Soil pH</label>
+              <div class="range-group">
+                <input
+                  type="range"
+                  id="ph_range"
+                  min="0"
+                  max="14"
+                  step="0.1"
+                  oninput="syncRange(this, 'ph', 'ph_val')"
+                />
+                <input
+                  type="number"
+                  id="ph"
+                  name="ph"
+                  step="0.1"
+                  placeholder="e.g. 6.5"
+                  min="0"
+                  max="14"
+                  required
+                  value="{{ ph }}"
+                  style="width: 90px"
+                  oninput="syncNum(this, 'ph_range', 'ph_val')"
+                />
+                <span class="range-val" id="ph_val">{{ ph or '—' }}</span>
+              </div>
+            </div>
+            <div class="field">
+              <label><span class="field-icon">🌧</span>Rainfall (mm)</label>
+              <input
+                type="number"
+                name="rainfall"
+                step="0.1"
+                placeholder="e.g. 202"
+                min="0"
+                required
+                value="{{ rainfall }}"
+              />
+            </div>
+
+            <button type="submit" class="btn">⚡ Predict Best Crop</button>
+          </form>
+
+          {% if prediction_text %}
+          <div
+            class="result-box {% if '✅' in prediction_text %}result-success{% else %}result-error{% endif %}"
+          >
+            {% if '✅' in prediction_text %}
+            <div>
+              <div
+                style="
+                  font-size: 0.75rem;
+                  text-transform: uppercase;
+                  letter-spacing: 0.1em;
+                  color: var(--muted);
+                  margin-bottom: 4px;
+                "
+              >
+                Recommended Crop
+              </div>
+              <div class="result-crop">
+                🌾 {{ prediction_text | replace('✅ Recommended Crop: ', '') }}
+              </div>
+            </div>
+            {% else %} ⚠️ {{ prediction_text | replace('⚠️ ', '') }} {% endif %}
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- ── Info / Guide Panel ── -->
+        <div>
+          <div class="card" style="margin-bottom: 24px">
+            <div class="card-title">📖 Parameter Guide</div>
+            <div class="stats-grid">
+              <div class="stat-chip">
+                <span class="val">0–200</span
+                ><span class="lbl">N, P, K (kg/ha)</span>
+              </div>
+              <div class="stat-chip">
+                <span class="val">0–14</span><span class="lbl">pH Range</span>
+              </div>
+              <div class="stat-chip">
+                <span class="val">0–100%</span><span class="lbl">Humidity</span>
+              </div>
+            </div>
+            <ul
+              style="
+                list-style: none;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+              "
+            >
+              <li
+                style="
+                  display: flex;
+                  gap: 10px;
+                  align-items: flex-start;
+                  font-size: 0.88rem;
+                  color: var(--muted);
+                "
+              >
+                <span>🌿</span
+                ><span
+                  ><strong style="color: var(--text)">NPK values</strong>
+                  represent macronutrient content in your soil. Test your soil
+                  with a kit for accuracy.</span
+                >
+              </li>
+              <li
+                style="
+                  display: flex;
+                  gap: 10px;
+                  align-items: flex-start;
+                  font-size: 0.88rem;
+                  color: var(--muted);
+                "
+              >
+                <span>🌡️</span
+                ><span
+                  ><strong style="color: var(--text)">Temperature</strong> is
+                  the average annual temperature of your region in °C.</span
+                >
+              </li>
+              <li
+                style="
+                  display: flex;
+                  gap: 10px;
+                  align-items: flex-start;
+                  font-size: 0.88rem;
+                  color: var(--muted);
+                "
+              >
+                <span>🧫</span
+                ><span
+                  ><strong style="color: var(--text)">pH 6–7</strong> is ideal
+                  for most crops. Below 6 is acidic; above 7 is alkaline.</span
+                >
+              </li>
+              <li
+                style="
+                  display: flex;
+                  gap: 10px;
+                  align-items: flex-start;
+                  font-size: 0.88rem;
+                  color: var(--muted);
+                "
+              >
+                <span>🌧️</span
+                ><span
+                  ><strong style="color: var(--text)">Rainfall</strong> is
+                  average annual precipitation in millimetres.</span
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🤖 How It Works</div>
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              {% for step in [ ('1', '🌍', 'Collect Parameters', 'Enter your
+              soil nutrients, temperature, humidity, pH, and rainfall.'), ('2',
+              '🧠', 'ML Inference', 'A Random Forest model trained on 2200+
+              samples evaluates your data.'), ('3', '🌾', 'Get Recommendation',
+              'The model outputs the crop most likely to thrive in your
+              conditions.') ] %}
+              <div style="display: flex; gap: 12px; align-items: flex-start">
+                <div
+                  style="
+                    min-width: 28px;
+                    height: 28px;
+                    border-radius: 50%;
+                    background: var(--leaf);
+                    color: #fff;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 0.75rem;
+                    font-weight: 700;
+                  "
+                >
+                  {{ step[0] }}
+                </div>
+                <div>
+                  <div
+                    style="
+                      font-weight: 500;
+                      font-size: 0.9rem;
+                      margin-bottom: 2px;
+                    "
+                  >
+                    {{ step[2] }}
+                  </div>
+                  <div style="font-size: 0.82rem; color: var(--muted)">
+                    {{ step[3] }}
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="charts-section">
+        <div class="section-head">
+          <h2>📊 Dataset Insights</h2>
+          <p>Visualisations generated from the crop recommendation dataset</p>
+        </div>
+
+        {% if prediction_text and '✅' in prediction_text %}
+        <!-- Charts rendered after first successful prediction -->
+        <div class="charts-grid">
+          {% set chart_labels = [ 'Nitrogen Distribution', 'Phosphorus
+          Distribution', 'Potassium Distribution', 'Temperature Distribution',
+          'Humidity Distribution', 'pH Distribution', 'Rainfall Distribution',
+          'Temperature vs Humidity', 'pH vs Rainfall', 'Feature Correlation
+          Heatmap' ] %} {% for i in range(1, 11) %}
+          <div class="chart-card">
+            <div class="chart-label">{{ chart_labels[i-1] }}</div>
+            <img
+              src="{{ url_for('static', filename='chart' ~ i ~ '.png') }}"
+              alt="{{ chart_labels[i-1] }}"
+              loading="lazy"
+              onerror="this.closest('.chart-card').style.display = 'none'"
+            />
+          </div>
+          {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- Placeholder shown before any prediction is made -->
+        <div class="charts-placeholder">
+          <span class="ph-icon">📈</span>
+          <p>
+            Charts will appear here after your
+            <strong>first prediction</strong>.<br />
+            Fill in the form above and click
+            <strong>⚡ Predict Best Crop</strong> to generate the dataset
+            visualisations.
+          </p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <!-- /page -->
+
+    <!-- ─── Chatbot ──────────────────────────────────────── -->
+    <div class="chat-fab">
+      <div class="chat-window" id="chatWindow">
+        <div class="chat-header">
+          <div class="chat-dot"></div>
+          FarmBot — Farming Assistant
+        </div>
+        <div class="chat-messages" id="chatMessages">
+          <div class="msg bot">
+            Hello! 👋 I'm FarmBot. Ask me anything about crops, soil,
+            fertilizers, or irrigation!
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input
+            type="text"
+            id="chatInput"
+            placeholder="Ask something…"
+            onkeydown="if (event.key === 'Enter') sendChat();"
+          />
+          <button class="chat-send" onclick="sendChat()">➤</button>
+        </div>
+      </div>
+      <button id="chat-toggle" onclick="toggleChat()" title="Open FarmBot">
+        🌱
+      </button>
+    </div>
+
+    <script>
+      /* ── Range / number sync ── */
+      function syncRange(range, numId, valId) {
+        document.getElementById(numId).value = range.value;
+        document.getElementById(valId).textContent = range.value;
+      }
+      function syncNum(num, rangeId, valId) {
+        document.getElementById(rangeId).value = num.value;
+        document.getElementById(valId).textContent = num.value || "—";
+      }
+
+      /* ── Init range thumbs from existing values ── */
+      ["humidity", "ph"].forEach((id) => {
+        const n = document.getElementById(id);
+        const r = document.getElementById(id + "_range");
+        const v = document.getElementById(id + "_val");
+        if (n && n.value) {
+          r.value = n.value;
+          v.textContent = n.value;
+        }
+      });
+
+      /* ── Chatbot ── */
+      const responses = {
+        hello: "Hi there! How can I assist you with farming today?",
+        hi: "Hello! Need help with crops or irrigation?",
+        "what crop should i grow":
+          "Use the prediction form on this page — enter your soil and climate data to get a personalised recommendation!",
+        "which fertilizer is good":
+          "It depends on your soil type and crop. Common choices are Urea (N), DAP (P), and NPK blends.",
+        "how to protect crops from pests":
+          "Integrated pest management (IPM), crop rotation, companion planting, and targeted pesticide use all help.",
+        "what is smart irrigation":
+          "Smart irrigation uses sensors and automation to apply the right amount of water at the right time.",
+        nitrogen:
+          "Nitrogen promotes leafy, green growth. Deficiency shows as yellowing of older leaves.",
+        phosphorus:
+          "Phosphorus supports root development and flowering. It's especially important early in a crop's lifecycle.",
+        potassium:
+          "Potassium strengthens stems and improves drought resistance and disease tolerance.",
+        ph: "Most crops thrive in a pH of 6–7. Add lime to raise pH, or sulfur to lower it.",
+        rainfall:
+          "Adequate rainfall ensures nutrient uptake. Supplement with irrigation during dry spells.",
+        temperature:
+          "Each crop has an optimal temperature range. Most cereals prefer 15–25 °C.",
+        "thank you": "You're welcome! Happy farming! 🌾",
+        bye: "Goodbye! Feel free to return anytime.",
+      };
+
+      function getReply(input) {
+        input = input.toLowerCase();
+        for (const key in responses)
+          if (input.includes(key)) return responses[key];
+        return "I'm not sure about that. Try asking about crops, fertilizers, pH, or irrigation!";
+      }
+
+      function sendChat() {
+        const inp = document.getElementById("chatInput");
+        const msgs = document.getElementById("chatMessages");
+        const text = inp.value.trim();
+        if (!text) return;
+        msgs.innerHTML += `<div class="msg user">${text}</div>`;
+        setTimeout(() => {
+          msgs.innerHTML += `<div class="msg bot">${getReply(text)}</div>`;
+          msgs.scrollTop = msgs.scrollHeight;
+        }, 300);
+        inp.value = "";
+        msgs.scrollTop = msgs.scrollHeight;
+      }
+
+      function toggleChat() {
+        document.getElementById("chatWindow").classList.toggle("open");
+      }
+    </script>
+  </body>
+</html>
