@@ -2024,6 +2024,126 @@
       sendChat();
     }
 
+    /* ── FarmBot Client-Side Knowledge Base (100% resilient fallback) ── */
+    const CROP_KB = {
+      rice: { name: 'Rice', emoji: '🌾', cat: 'Cereal Grain', season: 'Kharif (Monsoon)', temp: '20°C – 35°C', water: 'High (Standing water, 150-300 mm rain)', soil: 'Clayey or loamy soil (pH 5.5–7.0)', tip: 'Maintain consistent puddle water during tillering and panicle initiation.' },
+      maize: { name: 'Maize', emoji: '🌽', cat: 'Cereal / Fodder', season: 'Kharif / Rabi', temp: '18°C – 27°C', water: 'Moderate (50-100 mm rain)', soil: 'Well-drained fertile loam (pH 5.5–7.5)', tip: 'Ensure good field drainage; avoid waterlogging during early seedling stages.' },
+      chickpea: { name: 'Chickpea', emoji: '🌱', cat: 'Pulse / Legume', season: 'Rabi (Winter)', temp: '15°C – 25°C', water: 'Low to Moderate (60-90 mm rain)', soil: 'Deep, well-drained sandy loam to clay loam (pH 6.0–8.0)', tip: 'Inoculate seeds with Rhizobium culture to boost atmospheric nitrogen fixation.' },
+      kidneybeans: { name: 'Kidneybeans (Rajma)', emoji: '🫘', cat: 'Pulse / Legume', season: 'Rabi / Spring', temp: '15°C – 25°C', water: 'Moderate (60-150 mm rain)', soil: 'Rich, light, organic loam (pH 5.5–6.5)', tip: 'Sensitive to salinity and frost; protect root zones with organic mulching.' },
+      pigeonpeas: { name: 'Pigeonpeas (Arhar/Toor)', emoji: '🌿', cat: 'Pulse / Legume', season: 'Kharif', temp: '20°C – 35°C', water: 'Moderate to Dry (90-150 mm rain)', soil: 'Loamy to clay loam with good drainage (pH 6.0–7.5)', tip: 'Deep taproots tolerate drought; highly recommended for intercropping with cereals.' },
+      mothbeans: { name: 'Mothbeans', emoji: '🌾', cat: 'Arid Legume', season: 'Kharif', temp: '25°C – 40°C', water: 'Low / Drought Tolerant (30-75 mm rain)', soil: 'Sandy to sandy loam, well-drained (pH 6.5–8.0)', tip: 'Supreme drought tolerance for arid zones; acts as an anti-erosion green manure.' },
+      mungbean: { name: 'Mungbean (Moong)', emoji: '🫘', cat: 'Pulse / Legume', season: 'Kharif / Summer', temp: '25°C – 35°C', water: 'Moderate (40-90 mm rain)', soil: 'Well-drained loamy soil (pH 6.2–7.2)', tip: 'Fast 60-day lifecycle makes it the ideal gap crop for rotational fertility.' },
+      blackgram: { name: 'Blackgram (Urad)', emoji: '🫘', cat: 'Pulse / Legume', season: 'Kharif / Spring', temp: '25°C – 35°C', water: 'Moderate (60-80 mm rain)', soil: 'Heavy loams or clayey moisture-holding soils (pH 6.5–7.8)', tip: 'Enriches soil nitrogen naturally; spray mild zinc/urea during pod setting.' },
+      lentil: { name: 'Lentil (Masoor)', emoji: '🥣', cat: 'Pulse / Legume', season: 'Rabi (Winter)', temp: '15°C – 25°C', water: 'Low to Moderate (40-60 mm rain)', soil: 'Well-drained loam or alluvial silt (pH 6.0–7.5)', tip: 'Thrives in crisp winter air; avoid heavy waterlogged soils.' },
+      pomegranate: { name: 'Pomegranate', emoji: '🍎', cat: 'Subtropical Fruit', season: 'Ambe / Mrig Bahar', temp: '20°C – 35°C', water: 'Moderate (80-120 mm rain)', soil: 'Deep, heavy, loamy or alluvial soil (pH 6.5–7.5)', tip: 'Regulate irrigation cycles (water stress followed by watering) to induce heavy bloom.' },
+      banana: { name: 'Banana', emoji: '🍌', cat: 'Tropical Fruit', season: 'Year-round planting', temp: '25°C – 35°C', water: 'High (90-200 mm regular moisture)', soil: 'Deep, rich, well-drained alluvial/volcanic soil (pH 6.0–7.5)', tip: 'Heavy feeder of Potassium (K); mulch heavily to maintain root zone humidity.' },
+      mango: { name: 'Mango', emoji: '🥭', cat: 'Tropical Fruit', season: 'Summer Harvest', temp: '24°C – 35°C', water: 'Moderate (80-120 mm rain)', soil: 'Deep, alluvial or red loamy soil (pH 5.5–7.5)', tip: 'Withhold watering 2 months before flowering to promote abundant panicle emergence.' },
+      grapes: { name: 'Grapes', emoji: '🍇', cat: 'Fruit / Vineyard', season: 'Pruning: Oct / Harvest: Mar', temp: '15°C – 35°C', water: 'Moderate (50-80 mm rain)', soil: 'Sandy loam or gravelly volcanic loam (pH 6.5–8.0)', tip: 'Requires rigorous canopy management and balanced Potassium for berry brix sugar.' },
+      watermelon: { name: 'Watermelon', emoji: '🍉', cat: 'Cucurbit / Fruit', season: 'Zaid (Early Summer)', temp: '24°C – 35°C', water: 'Low to Moderate (40-60 mm rain)', soil: 'Sandy to sandy loam with high drainage (pH 6.0–7.0)', tip: 'Taper off irrigation 10 days before harvest to concentrate sugars and sweetness.' },
+      muskmelon: { name: 'Muskmelon', emoji: '🍈', cat: 'Cucurbit / Fruit', season: 'Zaid (Early Summer)', temp: '25°C – 35°C', water: 'Low (20-40 mm rain)', soil: 'Sandy loam rich in organic matter (pH 6.0–7.0)', tip: 'Warm dry weather during fruit development is mandatory for netting and aroma.' },
+      apple: { name: 'Apple', emoji: '🍏', cat: 'Temperate Fruit', season: 'Autumn Harvest', temp: '10°C – 24°C', water: 'Moderate (100-120 mm rain)', soil: 'Deep, fertile, well-drained loamy soil (pH 5.5–6.8)', tip: 'Requires 1000+ chilling hours below 7°C in winter for dormancy breaking and fruit set.' },
+      orange: { name: 'Orange', emoji: '🍊', cat: 'Citrus Fruit', season: 'Winter / Spring', temp: '15°C – 35°C', water: 'Moderate (90-120 mm rain)', soil: 'Well-drained light loam or sandy loam (pH 6.0–7.5)', tip: 'Susceptible to waterlogging; apply micronutrient foliar sprays (Zinc, Iron) periodically.' },
+      papaya: { name: 'Papaya', emoji: '🥭', cat: 'Tropical Fruit', season: 'Continuous (10-12 mo)', temp: '22°C – 35°C', water: 'Moderate to High (120-160 mm rain)', soil: 'Rich, friable, well-drained loam (pH 6.0–7.0)', tip: 'Extremely sensitive to collar rot if water stagnates; plant on raised ridges.' },
+      coconut: { name: 'Coconut', emoji: '🥥', cat: 'Plantation Crop', season: 'Coastal / Perennial', temp: '25°C – 35°C (high humidity)', water: 'High (140-200 mm rain)', soil: 'Sandy loam, alluvial, or red sandy loam (pH 5.2–8.0)', tip: 'Needs coastal warmth or high humidity; apply regular potash and organic compost.' },
+      cotton: { name: 'Cotton', emoji: '☁️', cat: 'Fiber Cash Crop', season: 'Kharif', temp: '21°C – 35°C', water: 'Moderate (60-90 mm rain)', soil: 'Deep black cotton soil (Vertisols) or alluvial loam (pH 6.0–8.0)', tip: 'Sunny dry weather required during boll bursting and picking to preserve lint grade.' },
+      jute: { name: 'Jute', emoji: '🌿', cat: 'Fiber Crop', season: 'Pre-Kharif / Monsoon', temp: '24°C – 37°C', water: 'High (150-200 mm rain)', soil: 'Alluvial delta soil with organic matter (pH 6.0–7.5)', tip: 'Thrives in river basins with standing monsoon water; retting requires slow clean water.' },
+      coffee: { name: 'Coffee', emoji: '☕', cat: 'Beverage Plantation', season: 'Hill Shade / Perennial', temp: '15°C – 28°C under canopy', water: 'High (150-200 mm rain)', soil: 'Porous, rich, volcanic/forest humus loam (pH 6.0–6.5)', tip: 'Grow under two-tier shade trees; timely blossom showers trigger synchronous flowering.' }
+    };
+
+    function generateClientBotReply(rawText) {
+      if (!rawText || !rawText.trim()) {
+        return "Please ask a question regarding crops, soil nutrients (NPK), climate, pH, or irrigation!";
+      }
+      const t = rawText.trim().toLowerCase();
+
+      // Crop matches
+      for (const [key, crop] of Object.entries(CROP_KB)) {
+        if (t.includes(key) || (key === 'maize' && t.includes('corn')) || (key === 'rice' && t.includes('paddy')) || (key === 'chickpea' && (t.includes('chana') || t.includes('gram')))) {
+          if (t.includes('water') || t.includes('rain') || t.includes('irrigation')) {
+            return `${crop.emoji} **${crop.name} — Water Requirements:**\n• Water Demand: ${crop.water}\n• Ideal Season: ${crop.season}\n• Agronomist Tip: ${crop.tip}`;
+          }
+          if (t.includes('soil') || t.includes('ph')) {
+            return `${crop.emoji} **${crop.name} — Soil Compatibility:**\n• Soil Type: ${crop.soil}\n• Agronomist Tip: ${crop.tip}`;
+          }
+          if (t.includes('temp') || t.includes('climate') || t.includes('weather')) {
+            return `${crop.emoji} **${crop.name} — Climate & Temperature:**\n• Optimal Temperature: ${crop.temp}\n• Ideal Season: ${crop.season}`;
+          }
+          return `${crop.emoji} **${crop.name}** (${crop.cat}):\n• **Ideal Season:** ${crop.season}\n• **Optimal Temperature:** ${crop.temp}\n• **Water / Rainfall:** ${crop.water}\n• **Soil Compatibility:** ${crop.soil}\n• **Agronomist Tip:** ${crop.tip}`;
+        }
+      }
+
+      // Low rainfall / Drought
+      if ((t.includes('low') || t.includes('less') || t.includes('drought') || t.includes('dry') || t.includes('arid')) && (t.includes('rain') || t.includes('water') || t.includes('crop'))) {
+        return "🌵 **Top Crops for Low Rainfall & Drought-Prone Regions (30–80 mm):**\n1. **Mothbeans** (Avg Rain: 51 mm) — Arid legume; deep taproot.\n2. **Mungbean** (Avg Rain: 48 mm) — Short 60-day lifecycle.\n3. **Lentil** (Avg Rain: 46 mm) — Excellent semi-arid cool pulse.\n4. **Watermelon / Muskmelon** (Avg Rain: 25–50 mm) — Thrives in dry, warm climates.\n5. **Chickpea** (Avg Rain: 80 mm) — High drought tolerance; utilizes deep residual moisture.";
+      }
+
+      // High rainfall / Wetlands
+      if ((t.includes('high') || t.includes('heavy') || t.includes('more') || t.includes('flood') || t.includes('wet')) && (t.includes('rain') || t.includes('water') || t.includes('crop'))) {
+        return "🌊 **Top Crops for High Rainfall & Wetlands (>150 mm):**\n1. **Rice / Paddy** (Avg Rain: 236 mm) — Thrives in standing water.\n2. **Coconut** (Avg Rain: 176 mm) — Heavy tropical rain & humidity.\n3. **Jute** (Avg Rain: 175 mm) — Ideal for delta floodplains.\n4. **Coffee** (Avg Rain: 158 mm) — Needs regular rainfall & canopy shade.";
+      }
+
+      // Winter / Rabi
+      if (t.includes('winter') || t.includes('rabi') || t.includes('cold') || t.includes('frost')) {
+        return "❄️ **Top Crops for Winter (Rabi Season, 12°C–22°C):**\n• **Chickpea (Gram)** — Major rabi legume; fixes soil nitrogen.\n• **Lentil (Masoor)** — Thrives in cool, crisp winter loam.\n• **Kidneybeans (Rajma)** — High-value pulse for cool spring/rabi zones.\n• **Apple** (Temperate) — Requires 1000+ chilling hours below 7°C.";
+      }
+
+      // Summer / Zaid
+      if (t.includes('summer') || t.includes('zaid') || t.includes('hot') || t.includes('kharif')) {
+        return "☀️ **Top Crops for Summer & Warm Climates (24°C–35°C):**\n• **Zaid (Summer):** Watermelon, Muskmelon, Mungbean, Cucumber.\n• **Kharif (Monsoon):** Rice, Maize, Cotton, Jute, Pigeonpeas, Blackgram.\n• **Tropical Fruits:** Papaya (33.7°C), Mango (31.2°C), Banana (27.4°C).";
+      }
+
+      // Soils
+      if (t.includes('black soil') || t.includes('vertisol')) {
+        return "🌱 **Optimal Crops for Black Soil (Vertisols):**\n1. **Cotton** (Best fit; black soil retains moisture for boll formation).\n2. **Chickpea & Pigeonpeas** (Tolerate clay cracking and access deep nutrients).\n3. **Maize & Sorghum** (High cation exchange capacity produces superior yields).";
+      }
+      if (t.includes('sandy')) {
+        return "🏖️ **Optimal Crops for Sandy Soil:**\n1. **Watermelon & Muskmelon** (Loose, fast-warming soil prevents root rots).\n2. **Mothbeans** (Deep taproot binds sandy particles).\n3. **Groundnuts & Root Crops** (Easy penetration and unhindered pod expansion).";
+      }
+      if (t.includes('clay')) {
+        return "🧱 **Optimal Crops for Clay Soil:**\n1. **Rice / Paddy** (Clay layer prevents water percolation).\n2. **Jute** (Heavy moisture retention supports rapid growth).\n3. **Blackgram** (Enjoys dense, nutrient-rich moisture profiles).";
+      }
+
+      // Symptoms / Deficiencies
+      if (t.includes('yellow') || t.includes('chlorosis')) {
+        return "🍂 **Agronomist Diagnosis for Yellow Leaves (Chlorosis):**\n1. **Older Lower Leaves Yellowing First:** Classic sign of **Nitrogen (N) deficiency**. *Remedy: Apply Urea (46% N) or composted manure tea.*\n2. **Interveinal Yellowing (Green veins with yellow tissue):** Indicates **Iron (Fe) or Magnesium (Mg) deficiency**.\n3. **Yellowing with wilting:** Indicates **over-watering / waterlogging**, which suffocates roots.";
+      }
+      if (t.includes('burnt') || t.includes('scorched') || t.includes('brown edge') || t.includes('brown margin')) {
+        return "🔥 **Diagnosis for Brown / Scorched Leaf Margins:**\n• Symptom of **Potassium (K) deficiency**. Plant cannot regulate stomatal water loss.\n• *Remedy: Top-dress with Muriate of Potash (MOP, 60% K2O) or spray soluble potassium sulfate.*";
+      }
+      if (t.includes('purple') || t.includes('bronze')) {
+        return "🟣 **Diagnosis for Purple / Bronzed Leaves:**\n• Symptom of **Phosphorus (P) deficiency** or cold root zones inhibiting P assimilation.\n• *Remedy: Apply Diammonium Phosphate (DAP) or Single Super Phosphate (SSP) near the root zone.*";
+      }
+
+      // Nutrients
+      if (t.includes('nitrogen') || t.includes('urea')) {
+        return "🌱 **Nitrogen (N)** is crucial for chlorophyll formation, vegetative canopy growth, and protein synthesis. Nitrogen deficiency causes stunted growth and pale yellowing (chlorosis) of older leaves. Supplement with Urea (46% N), Ammonium Sulfate, or well-rotted cattle manure.";
+      }
+      if (t.includes('phosphorus') || t.includes('dap')) {
+        return "🌿 **Phosphorus (P)** powers cellular energy transfer (ATP), rapid seedling root establishment, and early flowering/fruit set. Deficiency results in purplish leaf margins and stunted root systems. Apply Diammonium Phosphate (DAP) or Single Super Phosphate (SSP) at planting.";
+      }
+      if (t.includes('potassium') || t.includes('potash') || t.includes('mop')) {
+        return "🪵 **Potassium (K)** regulates stomatal opening, improves disease resistance, activates enzymatic processes, and enhances crop drought resilience. Deficiency produces leaf margin burning/scorching. Apply Muriate of Potash (MOP) or Sulfate of Potash (SOP).";
+      }
+      if (t.includes('ph') || t.includes('acid') || t.includes('alkaline') || t.includes('lime')) {
+        return "🧫 **Soil pH Guide:** The optimal bioavailable range for most crops is pH 6.0 to 7.2.\n• For Acidic Soils (pH < 6.0): Broadcast agricultural lime (calcium carbonate) or dolomite to neutralize acidity.\n• For Alkaline Soils (pH > 7.5): Incorporate agricultural gypsum (calcium sulfate) or elemental sulfur with compost to lower pH.";
+      }
+      if (t.includes('irrigation') || t.includes('drip') || t.includes('sprinkler')) {
+        return "💦 **Irrigation Systems:**\n• Drip Irrigation: Delivers water directly to root zones, reducing water consumption by up to 60% and minimizing fungal foliage diseases.\n• Sprinkler Irrigation: Uniformly covers large acreage on undulating terrain.\n• Moisture Sensors: Track soil moisture tension to irrigate only when necessary.";
+      }
+      if (t.includes('accuracy') || t.includes('model') || t.includes('random forest') || t.includes('ml')) {
+        return "📊 **Machine Learning Architecture:** CropIQ employs a Scikit-Learn Random Forest Classifier (100 ensemble estimators) achieving **99.55% test accuracy**. It is trained on 2,200 multi-climatic agricultural records across 22 crop classes using 7 environmental features (N, P, K, Temperature, Humidity, pH, Rainfall).";
+      }
+      if (t.includes('hello') || t.includes('hi') || t.includes('hey')) {
+        return "Hello! 🌱 I'm FarmBot, your precision farming AI advisor. Ask me anything about crop varieties, soil nutrients, fertilizers, pH adjustment, or irrigation!";
+      }
+      if (t.includes('thank') || t.includes('thanks')) {
+        return "You're very welcome! Wishing you high yields, healthy soils, and prosperous harvests! 🌾🚜";
+      }
+
+      // Intelligent Fallback
+      return "🌱 That's a great farming inquiry! Here is how FarmBot can assist you directly:\n• **Specific Crops:** Ask *'How to grow Banana?'*, *'Rice rainfall'*, or *'Cotton fertilizer'*\n• **Soil & Nutrients:** Ask *'Why are my leaves yellow?'*, *'How to raise soil pH'*, or *'Best fertilizer for maize'*\n• **Weather & Climate:** Ask *'What crops for low rainfall?'* or *'What to grow in winter?'*\n• **AI Predictions:** Provide values (e.g. *'N=90, P=42, K=43, temp=21, rain=200'*) for an instant ML recommendation!";
+    }
+
     async function sendChat() {
       const input = document.getElementById('chatInput');
       const text = input ? input.value.trim() : '';
@@ -2045,12 +2165,14 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: text })
         });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
         const data = await response.json();
         if (typing) typing.style.display = 'none';
         msgs.innerHTML += `<div class="msg bot">${formatBotReply(data.reply)}</div>`;
       } catch (err) {
         if (typing) typing.style.display = 'none';
-        msgs.innerHTML += `<div class="msg bot">I can help with crops, NPK nutrients, soil pH, or irrigation methods!</div>`;
+        const offlineReply = generateClientBotReply(text);
+        msgs.innerHTML += `<div class="msg bot">${formatBotReply(offlineReply)}</div>`;
       }
       msgs.scrollTop = msgs.scrollHeight;
     }
@@ -2094,12 +2216,14 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: text })
         });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
         const data = await response.json();
         if (typing) typing.style.display = 'none';
         msgs.innerHTML += `<div class="msg bot">${formatBotReply(data.reply)}</div>`;
       } catch (err) {
         if (typing) typing.style.display = 'none';
-        msgs.innerHTML += `<div class="msg bot">I can help with all 22 crops, NPK nutrients, soil pH, or irrigation methods!</div>`;
+        const offlineReply = generateClientBotReply(text);
+        msgs.innerHTML += `<div class="msg bot">${formatBotReply(offlineReply)}</div>`;
       }
       msgs.scrollTop = msgs.scrollHeight;
     }
@@ -2108,6 +2232,17 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.getElementById('resultIdle').style.display = 'block';
       document.getElementById('resultCard').style.display = 'none';
+
+      // Protocol-aware relative path fixer if opened directly as file:///
+      if (window.location.protocol === 'file:') {
+        document.querySelectorAll('a[href^="/"]').forEach(a => {
+          const path = a.getAttribute('href');
+          if (path === '/login') a.setAttribute('href', 'login.html');
+          else if (path === '/register') a.setAttribute('href', 'register.html');
+          else if (path === '/logout') a.setAttribute('href', 'logout.html');
+          else if (path === '/dashboard') a.setAttribute('href', 'dashboard.html');
+        });
+      }
     });
   </script>
 </body>
