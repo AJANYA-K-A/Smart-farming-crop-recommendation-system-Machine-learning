@@ -401,11 +401,29 @@ def login():
     return render_template('login.html', error=error)
 
 
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """Registration page for new farmers & agronomists."""
+    if request.method == 'POST':
+        name = request.form.get('name', 'Farmer Alex').strip() or 'Farmer Alex'
+        email = request.form.get('email', 'alex@smartfarm.org').strip() or 'alex@smartfarm.org'
+        role = request.form.get('role', 'Farm Manager')
+        farm_name = request.form.get('farm_name', 'Greenfield Plot').strip()
+        session['user'] = {
+            'email': email,
+            'name': name,
+            'role': role,
+            'farm_name': farm_name
+        }
+        return redirect(url_for('dashboard'))
+    return render_template('register.html')
+
+
 @app.route('/logout')
 def logout():
-    """Sign out and return to login."""
+    """Sign out and render separate dedicated logout page."""
     session.clear()
-    return redirect(url_for('login'))
+    return render_template('logout.html')
 
 
 @app.route('/dashboard', methods=['GET', 'POST'])

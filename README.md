@@ -122,6 +122,8 @@ Smart-farming-crop-recommendation-system-Machine-learning/
 ├── README.md                  # Comprehensive project documentation
 ├── templates/
 │   ├── login.html             # Dedicated authentication portal with 1-click access
+│   ├── register.html          # Dedicated registration & sign-up portal
+│   ├── logout.html            # Dedicated secure sign-out confirmation page
 │   ├── dashboard.html         # Executive precision farming dashboard with tabs & KPIs
 │   └── index.html             # Standalone fallback dashboard interface
 │

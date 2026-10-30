@@ -62,13 +62,33 @@ class CropRecommendationAppTests(unittest.TestCase):
             print("[PASS] test_04_login_post_and_dashboard")
 
     def test_05_logout(self):
-        """Verify /logout clears session and redirects to /login."""
+        """Verify /logout clears session and renders separate logout page."""
         with self.client:
             self.client.post('/login', data={'email': 'farmer@smartfarm.org', 'password': '123'})
-            response = self.client.get('/logout', follow_redirects=False)
-            self.assertEqual(response.status_code, 302)
-            self.assertIn('/login', response.headers.get('Location', ''))
-            print("[PASS] test_05_logout")
+            response = self.client.get('/logout')
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b'You Have Been Signed Out', response.data)
+            self.assertIn(b'Sign In Again', response.data)
+            print("[PASS] test_05_logout (Separate Logout Page)")
+
+    def test_05b_register(self):
+        """Verify /register GET and POST registration flow."""
+        response = self.client.get('/register')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'Join CropIQ', response.data)
+
+        with self.client:
+            post_res = self.client.post('/register', data={
+                'name': 'Agronomist Maria',
+                'farm_name': 'Sunny Acres',
+                'email': 'maria@agro.org',
+                'role': 'Lead Agronomist',
+                'password': 'safePassword123'
+            }, follow_redirects=True)
+            self.assertEqual(post_res.status_code, 200)
+            self.assertIn(b'CropIQ Dashboard', post_res.data)
+            self.assertIn(b'Agronomist Maria', post_res.data)
+            print("[PASS] test_05b_register (Separate Register Page)")
 
     def test_06_chat_endpoint(self):
         """Verify chatbot /chat JSON API response."""

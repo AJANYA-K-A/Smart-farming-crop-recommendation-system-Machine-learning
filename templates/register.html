@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Create a CropIQ Smart Farming Account" />
+  <title>Register — CropIQ Smart Farming Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --primary: #2d6a4f;
+      --primary-dark: #1b4332;
+      --primary-light: #52b788;
+      --accent: #d8f3dc;
+      --soil: #192e22;
+      --muted: #526359;
+      --bg: #f5f9f6;
+      --card-bg: rgba(255, 255, 255, 0.94);
+      --border: rgba(45, 106, 79, 0.16);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 24px;
+      --shadow: 0 20px 50px rgba(27, 67, 50, 0.12);
+      --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--soil);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(183, 228, 199, 0.5) 0%, transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(149, 213, 178, 0.45) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(233, 196, 106, 0.15) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .register-card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 580px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow);
+      padding: 44px 40px;
+      animation: popIn 0.35s ease;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.92) translateY(18px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .card-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .brand-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 12px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 6px 16px rgba(45, 106, 79, 0.25);
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: var(--soil);
+      margin-bottom: 6px;
+    }
+
+    .card-subtitle {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--soil);
+      margin-bottom: 5px;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      font-size: 1rem;
+      color: var(--primary);
+      pointer-events: none;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 48px;
+      padding: 11px 14px 11px 42px;
+      border: 1.5px solid #d2e4d9;
+      border-radius: var(--radius-md);
+      background: #fbfdfa;
+      font-family: inherit;
+      font-size: 0.92rem;
+      color: var(--soil);
+      outline: none;
+      transition: var(--transition);
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.14);
+      background: #fff;
+    }
+
+    .btn-register {
+      width: 100%;
+      min-height: 50px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 18px rgba(27, 67, 50, 0.2);
+    }
+
+    .btn-register:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(27, 67, 50, 0.28);
+      filter: brightness(1.06);
+    }
+
+    .card-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .card-footer a {
+      color: var(--primary);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .card-footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="register-card">
+    <div class="card-header">
+      <div class="brand-icon">🌱</div>
+      <h1 class="card-title">Join CropIQ</h1>
+      <p class="card-subtitle">Create an account to start optimizing your agricultural yield</p>
+    </div>
+
+    <form method="POST" action="/register">
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <div class="input-wrapper">
+          <span class="input-icon">👤</span>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            placeholder="e.g. Farmer Alex"
+            autocomplete="name"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="farm_name">Farm Name / Agro Region</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🏡</span>
+          <input
+            type="text"
+            id="farm_name"
+            name="farm_name"
+            placeholder="e.g. Greenfield Valley, Plot 4"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <div class="input-wrapper">
+          <span class="input-icon">✉️</span>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder="e.g. alex@smartfarm.org"
+            autocomplete="username"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="role">Your Agricultural Role</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🌾</span>
+          <select id="role" name="role" required>
+            <option value="Farm Manager" selected>Farmer / Farm Manager</option>
+            <option value="Lead Agronomist">Agronomist / Soil Consultant</option>
+            <option value="Agri Researcher">Agricultural Researcher / Student</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-wrapper">
+          <span class="input-icon">🔒</span>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+      </div>
+
+      <button type="submit" class="btn-register">
+        <span>Create Account & Launch Dashboard →</span>
+      </button>
+    </form>
+
+    <div class="card-footer">
+      Already have an account? <a href="/login">Sign In here</a>
+    </div>
+  </div>
+
+</body>
+</html>
