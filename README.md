@@ -254,18 +254,6 @@ The application includes headless REST endpoints for programmatic access and IoT
 
 ---
 
-## ☁️ Deployment Guide
-
-### Deploying to Render
-1. Fork or push this repository to GitHub.
-2. Sign in to [Render](https://render.com) and create a **New Web Service**.
-3. Connect your repository.
-4. Set the following settings:
-   - **Environment**: `Python 3`
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Start Command**: `gunicorn app:app`
-5. Click **Create Web Service**.
-
 ---
 
 ## 📄 License
