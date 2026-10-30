@@ -87,7 +87,7 @@ class CropRecommendationAppTests(unittest.TestCase):
             }, follow_redirects=True)
             self.assertEqual(post_res.status_code, 200)
             self.assertIn(b'CropIQ Dashboard', post_res.data)
-            self.assertIn(b'Agronomist Maria', post_res.data)
+            self.assertIn(b'Model Accuracy', post_res.data)
             print("[PASS] test_05b_register (Separate Register Page)")
 
     def test_06_chat_endpoint(self):

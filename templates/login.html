@@ -467,13 +467,6 @@
         <p class="form-subtitle">Sign in to access your precision farm dashboard</p>
       </div>
 
-      {% if error %}
-      <div class="alert-error">
-        <span>⚠️</span>
-        <span>{{ error }}</span>
-      </div>
-      {% endif %}
-
       <form method="POST" action="/login" id="loginForm">
         <div class="form-group">
           <label for="email">Email or Username</label>
@@ -486,7 +479,7 @@
               placeholder="e.g. farmer@smartfarm.org"
               autocomplete="username"
               required
-              value="{{ email or 'farmer@smartfarm.org' }}"
+              value="farmer@smartfarm.org"
             />
           </div>
         </div>
@@ -502,7 +495,7 @@
               placeholder="••••••••"
               autocomplete="current-password"
               required
-              value="{{ password or 'farming123' }}"
+              value="farming123"
             />
             <button
               type="button"

@@ -1061,16 +1061,10 @@
 
     <div class="nav-actions">
       <div class="user-pill">
-        <div class="user-avatar" id="avatarLetter">
-          {{ (session.get('user', {}).get('name', 'Farmer John'))[0] }}
-        </div>
+        <div class="user-avatar" id="avatarLetter">F</div>
         <div class="user-info-text">
-          <span class="user-name" id="userNameLabel">
-            {{ session.get('user', {}).get('name', 'Farmer John') }}
-          </span>
-          <span class="user-role" id="userRoleLabel">
-            {{ session.get('user', {}).get('role', 'Farm Manager') }}
-          </span>
+          <span class="user-name" id="userNameLabel">Farmer John</span>
+          <span class="user-role" id="userRoleLabel">Farm Operations</span>
         </div>
       </div>
 
@@ -1492,31 +1486,85 @@
       </div>
 
       <div class="charts-grid">
-        {% set chart_titles = [
-          'Nitrogen (N) Distribution',
-          'Phosphorus (P) Distribution',
-          'Potassium (K) Distribution',
-          'Temperature Distribution (°C)',
-          'Humidity Distribution (%)',
-          'Soil pH Distribution',
-          'Annual Rainfall Distribution (mm)',
-          'Temperature vs Humidity Scatter',
-          'pH vs Rainfall Correlation',
-          'Feature Correlation Heatmap'
-        ] %}
-        {% for i in range(1, 11) %}
-        <div class="chart-card" onclick="openLightbox('{{ url_for('static', filename='chart' ~ i ~ '.png') }}', '{{ chart_titles[i-1] }}')">
+        <div class="chart-card" onclick="openLightbox('/static/chart1.png', 'Nitrogen (N) Distribution')">
           <div class="chart-head">
-            <span class="chart-head-title">{{ chart_titles[i-1] }}</span>
+            <span class="chart-head-title">Nitrogen (N) Distribution</span>
             <span class="chart-zoom-btn">🔍 Zoom</span>
           </div>
-          <img
-            src="{{ url_for('static', filename='chart' ~ i ~ '.png') }}"
-            alt="{{ chart_titles[i-1] }}"
-            loading="lazy"
-          />
+          <img src="/static/chart1.png" alt="Nitrogen Distribution" loading="lazy" onerror="this.src='static/chart1.png'" />
         </div>
-        {% endfor %}
+
+        <div class="chart-card" onclick="openLightbox('/static/chart2.png', 'Phosphorus (P) Distribution')">
+          <div class="chart-head">
+            <span class="chart-head-title">Phosphorus (P) Distribution</span>
+            <span class="chart-zoom-btn">🔍 Zoom</span>
+          </div>
+          <img src="/static/chart2.png" alt="Phosphorus Distribution" loading="lazy" onerror="this.src='static/chart2.png'" />
+        </div>
+
+        <div class="chart-card" onclick="openLightbox('/static/chart3.png', 'Potassium (K) Distribution')">
+          <div class="chart-head">
+            <span class="chart-head-title">Potassium (K) Distribution</span>
+            <span class="chart-zoom-btn">🔍 Zoom</span>
+          </div>
+          <img src="/static/chart3.png" alt="Potassium Distribution" loading="lazy" onerror="this.src='static/chart3.png'" />
+        </div>
+
+        <div class="chart-card" onclick="openLightbox('/static/chart4.png', 'Temperature Distribution (°C)')">
+          <div class="chart-head">
+            <span class="chart-head-title">Temperature Distribution (°C)</span>
+            <span class="chart-zoom-btn">🔍 Zoom</span>
+          </div>
+          <img src="/static/chart4.png" alt="Temperature Distribution" loading="lazy" onerror="this.src='static/chart4.png'" />
+        </div>
+
+        <div class="chart-card" onclick="openLightbox('/static/chart5.png', 'Humidity Distribution (%)')">
+          <div class="chart-head">
+            <span class="chart-head-title">Humidity Distribution (%)</span>
+            <span class="chart-zoom-btn">🔍 Zoom</span>
+          </div>
+          <img src="/static/chart5.png" alt="Humidity Distribution" loading="lazy" onerror="this.src='static/chart5.png'" />
+        </div>
+
+        <div class="chart-card" onclick="openLightbox('/static/chart6.png', 'Soil pH Distribution')">
+          <div class="chart-head">
+            <span class="chart-head-title">Soil pH Distribution</span>
+            <span class="chart-zoom-btn">🔍 Zoom</span>
+          </div>
+          <img src="/static/chart6.png" alt="Soil pH Distribution" loading="lazy" onerror="this.src='static/chart6.png'" />
+        </div>
+
+        <div class="chart-card" onclick="openLightbox('/static/chart7.png', 'Annual Rainfall Distribution (mm)')">
+          <div class="chart-head">
+            <span class="chart-head-title">Annual Rainfall Distribution (mm)</span>
+            <span class="chart-zoom-btn">🔍 Zoom</span>
+          </div>
+          <img src="/static/chart7.png" alt="Rainfall Distribution" loading="lazy" onerror="this.src='static/chart7.png'" />
+        </div>
+
+        <div class="chart-card" onclick="openLightbox('/static/chart8.png', 'Temperature vs Humidity Scatter')">
+          <div class="chart-head">
+            <span class="chart-head-title">Temperature vs Humidity Scatter</span>
+            <span class="chart-zoom-btn">🔍 Zoom</span>
+          </div>
+          <img src="/static/chart8.png" alt="Temperature vs Humidity" loading="lazy" onerror="this.src='static/chart8.png'" />
+        </div>
+
+        <div class="chart-card" onclick="openLightbox('/static/chart9.png', 'pH vs Rainfall Correlation')">
+          <div class="chart-head">
+            <span class="chart-head-title">pH vs Rainfall Correlation</span>
+            <span class="chart-zoom-btn">🔍 Zoom</span>
+          </div>
+          <img src="/static/chart9.png" alt="pH vs Rainfall" loading="lazy" onerror="this.src='static/chart9.png'" />
+        </div>
+
+        <div class="chart-card" onclick="openLightbox('/static/chart10.png', 'Feature Correlation Heatmap')">
+          <div class="chart-head">
+            <span class="chart-head-title">Feature Correlation Heatmap</span>
+            <span class="chart-zoom-btn">🔍 Zoom</span>
+          </div>
+          <img src="/static/chart10.png" alt="Correlation Heatmap" loading="lazy" onerror="this.src='static/chart10.png'" />
+        </div>
       </div>
     </div>
 
