@@ -6,6 +6,7 @@ Features Login Authentication, Executive Dashboard, REST APIs, and FarmBot AI.
 
 import os
 import sys
+import re
 import numpy as np
 import pandas as pd
 import joblib
@@ -271,88 +272,300 @@ def ensure_charts():
 ensure_charts()
 
 # ─── Agricultural Chatbot Intelligence ───────────────────────────────────────
-CHAT_KNOWLEDGE = [
+CROP_SYNONYMS = {
+    'rice': ['rice', 'paddy', 'dhan'],
+    'maize': ['maize', 'corn', 'sweetcorn', 'makka'],
+    'chickpea': ['chickpea', 'chickpeas', 'gram', 'chana', 'bengal gram'],
+    'kidneybeans': ['kidneybeans', 'kidneybean', 'kidney bean', 'rajma', 'beans'],
+    'pigeonpeas': ['pigeonpeas', 'pigeonpea', 'arhar', 'toor', 'tur', 'red gram'],
+    'mothbeans': ['mothbeans', 'mothbean', 'moth bean', 'matki', 'turkish gram'],
+    'mungbean': ['mungbean', 'mungbeans', 'mung', 'moong', 'green gram'],
+    'blackgram': ['blackgram', 'black gram', 'urad', 'mash'],
+    'lentil': ['lentil', 'lentils', 'masoor'],
+    'pomegranate': ['pomegranate', 'pomegranates', 'anar'],
+    'banana': ['banana', 'bananas', 'kela', 'plantain'],
+    'mango': ['mango', 'mangoes', 'mangos', 'aam'],
+    'grapes': ['grapes', 'grape', 'vineyard', 'angur'],
+    'watermelon': ['watermelon', 'watermelons', 'tarbooz'],
+    'muskmelon': ['muskmelon', 'muskmelons', 'cantaloupe', 'kharbooja'],
+    'apple': ['apple', 'apples', 'seb'],
+    'orange': ['orange', 'oranges', 'citrus', 'santra'],
+    'papaya': ['papaya', 'papayas', 'papita'],
+    'coconut': ['coconut', 'coconuts', 'nariyal'],
+    'cotton': ['cotton', 'kapas'],
+    'jute': ['jute', 'pat'],
+    'coffee': ['coffee', 'coffee bean', 'arabica', 'robusta']
+}
+
+AGRI_KNOWLEDGE = [
+    # Nitrogen (N)
     {
-        'keywords': ['nitrogen', 'urea', 'leaf', 'yellow leaves'],
-        'reply': "Nitrogen (N) stimulates rapid leafy growth and chlorophyll synthesis. Nitrogen deficiency causes stunted growth and pale yellowing of older leaves. Supplement with Urea (46% N) or organic manure."
+        'keywords': ['nitrogen', 'urea', 'leafy', 'chlorosis', 'yellow leaf', 'yellow leaves', 'pale leaves'],
+        'reply': "🌱 **Nitrogen (N)** is crucial for chlorophyll formation, vegetative canopy growth, and protein synthesis. Nitrogen deficiency causes stunted growth and pale yellowing (chlorosis) of older leaves. Supplement with Urea (46% N), Ammonium Sulfate, or well-rotted cattle manure."
     },
+    # Phosphorus (P)
     {
-        'keywords': ['phosphorus', 'dap', 'root', 'flowering'],
-        'reply': "Phosphorus (P) is crucial for root establishment, energy transfer (ATP), and flower/seed formation. Common sources include Diammonium Phosphate (DAP) and Single Super Phosphate (SSP)."
+        'keywords': ['phosphorus', 'phosphate', 'dap', 'ssp', 'root development', 'rooting', 'bloom', 'flowering'],
+        'reply': "🌿 **Phosphorus (P)** powers cellular energy transfer (ATP), rapid seedling root establishment, and early flowering/fruit set. Deficiency results in purplish leaf margins and stunted root systems. Apply Diammonium Phosphate (DAP) or Single Super Phosphate (SSP) at planting."
     },
+    # Potassium (K)
     {
-        'keywords': ['potassium', 'potash', 'mop', 'drought'],
-        'reply': "Potassium (K) regulates stomatal opening, strengthens cell walls, improves disease resistance, and boosts drought resilience. Apply Muriate of Potash (MOP) or Sulfate of Potash (SOP)."
+        'keywords': ['potassium', 'potash', 'mop', 'sop', 'stomata', 'drought resistance', 'stem strength'],
+        'reply': "🪵 **Potassium (K)** regulates stomatal opening, improves disease resistance, activates enzymatic processes, and enhances crop drought resilience. Deficiency produces leaf margin burning/scorching. Apply Muriate of Potash (MOP) or Sulfate of Potash (SOP)."
     },
+    # Soil pH & Liming
     {
-        'keywords': ['ph', 'acidic', 'alkaline', 'soil ph', 'lime'],
-        'reply': "Most agricultural crops prefer a soil pH between 6.0 and 7.2. For acidic soils (<6.0), add agricultural lime (calcium carbonate). For alkaline soils (>7.5), incorporate gypsum or elemental sulfur."
+        'keywords': ['ph', 'soil ph', 'acidic', 'alkaline', 'lime', 'liming', 'gypsum', 'sulfur'],
+        'reply': "🧫 **Soil pH Guide:** The optimal bioavailable range for most crops is pH 6.0 to 7.2.\n• For Acidic Soils (pH < 6.0): Broadcast agricultural lime (calcium carbonate) or dolomite to neutralize acidity.\n• For Alkaline Soils (pH > 7.5): Incorporate agricultural gypsum (calcium sulfate) or elemental sulfur with compost to lower pH."
     },
+    # Soil Types & Texture
     {
-        'keywords': ['irrigation', 'water', 'drip', 'sprinkler', 'smart irrigation'],
-        'reply': "Smart irrigation uses soil moisture sensors and automated timers. Drip irrigation reduces water loss by up to 60% compared to flood irrigation and delivers moisture straight to plant roots."
+        'keywords': ['soil type', 'soil texture', 'clay soil', 'sandy soil', 'loam', 'black soil', 'alluvial'],
+        'reply': "🪴 **Soil Texture Guide:**\n• Loam (Ideal): Balanced drainage and moisture retention; optimal for cereals, vegetables, and pulses.\n• Clay: High water-holding capacity; best for rice and wetland crops.\n• Sandy: Fast drainage and warms quickly; ideal for melons and root vegetables with organic mulch.\n• Black Soil (Vertisols): Rich in clay minerals with high fertility; optimal for cotton, wheat, and pulses."
     },
+    # Temperature
     {
-        'keywords': ['fertilizer', 'npk', 'fertilizer dose', 'compost'],
-        'reply': "A balanced N-P-K regimen tailored to your soil test is ideal. Combine inorganic fertilizers with organic compost or vermicompost to maintain microbial soil biodiversity."
+        'keywords': ['temperature', 'temp', 'heat', 'cold', 'frost', 'chilling hours'],
+        'reply': "🌡️ **Temperature Impact:** Temperature regulates crop metabolic rates and transpiration. Temperate crops (apples, lentils, chickpeas) require 12°C–22°C and cold chilling hours, while tropical crops (rice, papaya, cotton, watermelon) thrive between 22°C–35°C."
     },
+    # Humidity
     {
-        'keywords': ['pest', 'insects', 'ipm', 'disease', 'fungus'],
-        'reply': "Adopt Integrated Pest Management (IPM): practice crop rotation, install yellow sticky traps, encourage natural predators (ladybugs), and use neem oil spray before synthetic insecticides."
+        'keywords': ['humidity', 'relative humidity', 'moisture in air', 'humid'],
+        'reply': "💧 **Relative Humidity (RH):** High humidity (>80%) accelerates fungal spores but is favored by rice and jute. Moderate humidity (50–70%) promotes healthy transpiration, pollination, and fruit development for most field crops."
     },
+    # Rainfall
     {
-        'keywords': ['rice', 'paddy'],
-        'reply': "Rice thrives in warm, humid climates (20-35°C) with heavy rainfall (150-300 mm) and clayey soil that retains water. Ensure adequate nitrogen and zinc levels."
+        'keywords': ['rainfall', 'rain', 'precipitation', 'monsoon', 'annual rainfall'],
+        'reply': "🌧️ **Rainfall Dynamics:** Heavy rainfall (>150 mm) favors standing water crops like rice and hill plantations like coffee. Moderate rainfall (60–100 mm) supports maize, cotton, and pulses. Arid crops (mothbeans, chickpeas) tolerate 30–80 mm."
     },
+    # Irrigation
     {
-        'keywords': ['coffee'],
-        'reply': "Coffee is ideal in tropical hill slopes (15-28°C) under shade trees, requiring high rainfall (150-200 mm) and porous, organic-rich acidic loam (pH 6.0-6.5)."
+        'keywords': ['irrigation', 'drip', 'sprinkler', 'watering', 'water saving'],
+        'reply': "💦 **Irrigation Systems:**\n• Drip Irrigation: Delivers water directly to root zones, reducing water consumption by up to 60% and minimizing fungal foliage diseases.\n• Sprinkler Irrigation: Uniformly covers large acreage on undulating terrain.\n• Moisture Sensors: Track soil moisture tension to irrigate only when necessary."
     },
+    # Pest & Disease Control (IPM)
     {
-        'keywords': ['apple'],
-        'reply': "Apples require temperate climates (10-24°C) with 1000+ chilling hours below 7°C during winter, deep well-drained loams, and balanced potassium."
+        'keywords': ['pest', 'pests', 'insects', 'disease', 'fungus', 'blight', 'rot', 'ipm', 'neem'],
+        'reply': "🐛 **Integrated Pest Management (IPM):** Combine cultural, biological, and organic methods:\n1. Cultural: Practice 3-year crop rotation and intercropping.\n2. Physical: Install yellow sticky traps and solar light traps.\n3. Biological: Conserve natural predators like ladybird beetles.\n4. Organic: Spray 5% neem seed kernel extract (NSKE) or cold-pressed neem oil."
     },
+    # Fertilizers & Compost
     {
-        'keywords': ['watermelon', 'muskmelon', 'melon'],
-        'reply': "Melons love warm sunny weather (24-35°C) and well-drained sandy loams. Reduce watering during fruit maturation to maximize sweetness."
+        'keywords': ['fertilizer', 'fertilizers', 'compost', 'vermicompost', 'manure', 'organic farming'],
+        'reply': "🧪 **Fertilizer & Soil Nutrition:** Blend chemical N-P-K with organic vermicompost or farmyard manure (FYM). Organic amendments improve water holding capacity, build microbial biomass, and enhance nutrient uptake efficiency."
     },
+    # Model & Accuracy
     {
-        'keywords': ['cotton'],
-        'reply': "Cotton requires warm weather (21-35°C), deep black cotton soils (vertisols), and dry sunny conditions during the boll opening stage."
+        'keywords': ['accuracy', 'random forest', 'algorithm', 'model', 'dataset', 'machine learning', 'ml', 'training'],
+        'reply': "📊 **Machine Learning Architecture:** CropIQ employs a Scikit-Learn Random Forest Classifier (100 ensemble estimators) achieving **99.55% test accuracy**. It is trained on 2,200 multi-climatic agricultural records across 22 crop classes using 7 environmental features (N, P, K, Temperature, Humidity, pH, Rainfall)."
     },
+    # Predictor Instructions
     {
-        'keywords': ['crop', 'grow', 'recommend', 'suggest', 'plant'],
-        'reply': "You can use the Prediction Form on the homepage! Enter your Nitrogen, Phosphorus, Potassium, Temperature, Humidity, pH, and Rainfall to get an instant ML-backed recommendation."
+        'keywords': ['predict', 'recommend', 'how to use', 'preset', 'how to predict'],
+        'reply': "⚡ **How to Predict:** Open the **Crop Predictor** tab, enter your soil N-P-K levels, temperature, humidity, pH, and rainfall (or pick any 1-Click Preset like Rice, Maize, or Coffee), and click **Run AI Crop Prediction** for an instant ML recommendation!"
     },
+    # Help & Capabilities
     {
-        'keywords': ['hello', 'hi', 'hey', 'greetings'],
-        'reply': "Hello! I'm FarmBot 🌱, your smart farming advisor. Ask me anything about crops, soil nutrients, fertilizers, pH, or irrigation!"
+        'keywords': ['help', 'who are you', 'what can you do', 'what is farmbot', 'features'],
+        'reply': "🤖 **I'm FarmBot**, your smart agricultural AI advisor! I can assist with:\n• Crop recommendations & requirements for all 22 supported crops\n• Soil nutrients (Nitrogen, Phosphorus, Potassium, fertilizers)\n• Soil pH adjustments & textures\n• Irrigation methods & water management\n• Pest & disease control (IPM)\n• CropIQ machine learning model insights"
     },
+    # Greetings
     {
-        'keywords': ['thank', 'thanks', 'appreciate'],
-        'reply': "You're very welcome! Wishing you high yields and prosperous farming! 🌾🚜"
+        'keywords': ['hello', 'hi', 'hey', 'greetings', 'good morning', 'good evening', 'namaste'],
+        'reply': "Hello! 🌱 I'm FarmBot, your precision farming AI advisor. Ask me anything about crop varieties, soil nutrients, fertilizers, pH adjustment, or irrigation!"
     },
+    # Gratitude
+    {
+        'keywords': ['thank', 'thanks', 'appreciate', 'great', 'awesome'],
+        'reply': "You're very welcome! Wishing you high yields, healthy soils, and prosperous harvests! 🌾🚜"
+    },
+    # Farewells
     {
         'keywords': ['bye', 'goodbye', 'see you'],
-        'reply': "Goodbye! Come back whenever you need smart agricultural advice."
+        'reply': "Goodbye! Come back whenever you need smart agricultural advice. Have a productive day in the field! 🚜"
     }
 ]
 
 
 def get_response(user_input: str) -> str:
-    """Intelligent rule-based agricultural assistant reply."""
+    """Intelligent agricultural assistant reply that answers precisely according to user inquiry."""
     if not user_input or not user_input.strip():
         return "Please ask a question regarding crops, soil nutrients (NPK), climate, pH, or irrigation!"
 
-    lower = user_input.lower()
-    for entry in CHAT_KNOWLEDGE:
+    text = user_input.strip().lower()
+
+    # 1. Direct Numeric Prediction via Chat (e.g. N=90, P=42, K=43, temp=21, hum=82, ph=6.5, rain=200)
+    num_matches = {}
+    for param in ['n', 'p', 'k', 'temp', 'hum', 'ph', 'rain']:
+        m = re.search(rf'{param}\w*\s*[:=]\s*([\d\.]+)', text)
+        if m:
+            try:
+                num_matches[param] = float(m.group(1))
+            except ValueError:
+                pass
+
+    if len(num_matches) >= 3:
+        n_val = num_matches.get('n', 50.0)
+        p_val = num_matches.get('p', 50.0)
+        k_val = num_matches.get('k', 50.0)
+        t_val = num_matches.get('temp', 25.0)
+        h_val = num_matches.get('hum', 70.0)
+        ph_val = num_matches.get('ph', 6.5)
+        r_val = num_matches.get('rain', 100.0)
+
+        in_df = pd.DataFrame([[n_val, p_val, k_val, t_val, h_val, ph_val, r_val]], columns=FEATURE_COLS)
+        pred_label = label_encoder.inverse_transform(model.predict(in_df))[0]
+        pred_probs = model.predict_proba(in_df)[0]
+        conf_score = round(float(np.max(pred_probs)) * 100, 1)
+        details = CROP_DATA.get(pred_label.lower(), {})
+
+        return (
+            f"⚡ **Instant ML Prediction:** Based on your parameters "
+            f"(N: {n_val}, P: {p_val}, K: {k_val}, Temp: {t_val}°C, Humidity: {h_val}%, pH: {ph_val}, Rain: {r_val}mm):\n\n"
+            f"**Optimal Recommendation: {details.get('emoji', '🌾')} {pred_label.upper()}** ({conf_score}% match confidence)!\n"
+            f"• Category: {details.get('category', 'Crop')}\n"
+            f"• Season: {details.get('season', 'Optimal Season')}\n"
+            f"• Agronomist Tip: {details.get('tip', 'Follow standard crop management.')}"
+        )
+
+    # 2. Condition: Low Rainfall / Drought / Water-scarce crops
+    if ('low' in text or 'less' in text or 'little' in text or 'scarce' in text or 'drought' in text or 'arid' in text or 'dry' in text) and \
+       ('water' in text or 'rain' in text or 'rainfall' in text or 'crop' in text or 'grow' in text or 'plant' in text):
+        return (
+            "🌵 **Top Crops for Low Rainfall & Drought-Prone Regions (30–80 mm):**\n"
+            "1. **Mothbeans** (Avg Rain: 51 mm) — Supreme arid pulse; deep taproot anchors in loose dry soils.\n"
+            "2. **Mungbean** (Avg Rain: 48 mm) — Short 60-day lifecycle; minimal moisture demand.\n"
+            "3. **Lentil** (Avg Rain: 46 mm) — Excellent semi-arid cool-season pulse.\n"
+            "4. **Watermelon / Muskmelon** (Avg Rain: 25–50 mm) — Thrives in dry, warm climates with light soils.\n"
+            "5. **Chickpea** (Avg Rain: 80 mm) — High drought tolerance; utilizes deep residual moisture."
+        )
+
+    # 3. Condition: High Rainfall / Wetland / Heavy Monsoon
+    if ('high' in text or 'heavy' in text or 'more' in text or 'excess' in text or 'flood' in text or 'wet' in text) and \
+       ('water' in text or 'rain' in text or 'rainfall' in text or 'crop' in text or 'grow' in text or 'plant' in text):
+        return (
+            "🌊 **Top Crops for High Rainfall & Wetlands (>150 mm):**\n"
+            "1. **Rice / Paddy** (Avg Rain: 236 mm) — Thrives in standing puddle water and clayey basins.\n"
+            "2. **Coconut** (Avg Rain: 176 mm) — Demands heavy tropical rainfall and continuous humidity.\n"
+            "3. **Jute** (Avg Rain: 175 mm) — Ideal for delta floodplains and monsoon saturation.\n"
+            "4. **Coffee** (Avg Rain: 158 mm) — Requires heavy seasonal blossom showers and humid hill canopy."
+        )
+
+    # 4. Condition: Winter / Cold / Rabi Season
+    if 'winter' in text or 'rabi' in text or 'cold' in text or 'frost' in text or 'chilling' in text:
+        return (
+            "❄️ **Top Crops for Winter (Rabi Season, 12°C–22°C):**\n"
+            "• **Chickpea (Gram)** — Major rabi legume; fixes atmospheric nitrogen.\n"
+            "• **Lentil (Masoor)** — Thrives in cool, crisp winter loam.\n"
+            "• **Kidneybeans (Rajma)** — High-value pulse for cool spring/rabi zones.\n"
+            "• **Apple** (Temperate) — Requires 1000+ chilling hours below 7°C for bud breaking."
+        )
+
+    # 5. Condition: Summer / Zaid / Hot Climate
+    if 'summer' in text or 'zaid' in text or 'hot' in text or 'kharif' in text or 'monsoon' in text:
+        return (
+            "☀️ **Top Crops for Summer & Warm Climates (24°C–35°C):**\n"
+            "• **Zaid (Summer):** Watermelon, Muskmelon, Mungbean, Cucumber.\n"
+            "• **Kharif (Monsoon):** Rice, Maize, Cotton, Jute, Pigeonpeas, Blackgram.\n"
+            "• **Tropical Fruits:** Papaya (33.7°C), Mango (31.2°C), Banana (27.4°C)."
+        )
+
+    # 6. Soil-Specific Queries
+    if 'black soil' in text or 'vertisol' in text or 'black cotton' in text:
+        return (
+            "🌱 **Optimal Crops for Black Soil (Vertisols):**\n"
+            "1. **Cotton** (Best fit; black soil retains moisture and supports vigorous boll formation).\n"
+            "2. **Chickpea & Pigeonpeas** (Tolerate clay cracking and access deep nutrient reserves).\n"
+            "3. **Maize & Sorghum** (High cation exchange capacity produces superior yields)."
+        )
+    if 'sandy soil' in text or 'sand' in text:
+        return (
+            "🏖️ **Optimal Crops for Sandy Soil:**\n"
+            "1. **Watermelon & Muskmelon** (Loose, fast-warming soil prevents fruit/root collar rots).\n"
+            "2. **Mothbeans** (Deep taproot binds sandy particles and builds organic matter).\n"
+            "3. **Groundnuts & Root Crops** (Easy penetration and unhindered pod expansion)."
+        )
+    if 'clay soil' in text or 'clayey' in text:
+        return (
+            "🧱 **Optimal Crops for Clay Soil:**\n"
+            "1. **Rice / Paddy** (Clay layer prevents water percolation, keeping standing water).\n"
+            "2. **Jute** (Heavy moisture retention supports fast stem elongation).\n"
+            "3. **Blackgram** (Enjoys dense, nutrient-rich moisture profiles)."
+        )
+
+    # 7. Nutrient Deficiencies & Plant Symptoms
+    if 'yellow' in text or 'chlorosis' in text or 'pale leaf' in text or 'pale leaves' in text:
+        return (
+            "🍂 **Agronomist Diagnosis for Yellow Leaves (Chlorosis):**\n"
+            "1. **Older Lower Leaves Yellowing First:** Classic sign of **Nitrogen (N) deficiency**. The plant moves mobile nitrogen to new shoots. *Remedy: Apply Urea (46% N) or composted manure tea.*\n"
+            "2. **Interveinal Yellowing (Yellow leaf with green veins):** Indicates **Iron (Fe) or Magnesium (Mg) deficiency**.\n"
+            "3. **Yellowing accompanied by wilting:** Indicates **over-irrigation / waterlogging**, which suffocates roots and stops nutrient absorption."
+        )
+    if 'burnt' in text or 'scorched' in text or 'brown edge' in text or 'brown margin' in text:
+        return (
+            "🔥 **Diagnosis for Brown / Scorched Leaf Margins:**\n"
+            "• Distinct symptom of **Potassium (K) deficiency**. Weakens stomatal control and causes cell desiccation at margins.\n"
+            "• *Remedy: Top-dress with Muriate of Potash (MOP, 60% K2O) or spray soluble potassium sulfate.*"
+        )
+    if 'purple' in text or 'bronze' in text or 'purpling' in text:
+        return (
+            "🟣 **Diagnosis for Purple / Bronzed Leaves:**\n"
+            "• Symptom of **Phosphorus (P) deficiency** or cold root zones inhibiting P assimilation.\n"
+            "• *Remedy: Apply Diammonium Phosphate (DAP) or Single Super Phosphate (SSP) near the root zone.*"
+        )
+
+    # 8. Check for specific crop inquiries across all 22 crops
+    for crop_key, synonyms in CROP_SYNONYMS.items():
+        for syn in synonyms:
+            pattern = r'\b' + re.escape(syn) + r'\b'
+            if re.search(pattern, text) or syn in text:
+                details = CROP_DATA.get(crop_key, {})
+
+                # If user asks specifically about water/rain for this crop
+                if 'water' in text or 'rain' in text or 'irrigation' in text:
+                    return (
+                        f"{details.get('emoji', '🌾')} **{crop_key.title()} — Water Requirements:**\n"
+                        f"• Water Need: {details.get('water', 'Moderate')}\n"
+                        f"• Ideal Season: {details.get('season', 'Optimal Season')}\n"
+                        f"• Agronomist Tip: {details.get('tip', 'Ensure adequate drainage.')}"
+                    )
+                # If user asks specifically about soil for this crop
+                if 'soil' in text or 'ph' in text:
+                    return (
+                        f"{details.get('emoji', '🌾')} **{crop_key.title()} — Soil & pH Compatibility:**\n"
+                        f"• Soil Type: {details.get('soil', 'Well-drained loam')}\n"
+                        f"• Agronomist Tip: {details.get('tip', 'Maintain optimal soil organic matter.')}"
+                    )
+                # If user asks specifically about temperature for this crop
+                if 'temp' in text or 'climate' in text or 'weather' in text:
+                    return (
+                        f"{details.get('emoji', '🌾')} **{crop_key.title()} — Climate & Temperature:**\n"
+                        f"• Optimal Temperature: {details.get('temp', '20°C - 30°C')}\n"
+                        f"• Ideal Season: {details.get('season', 'Optimal Season')}"
+                    )
+
+                # General crop breakdown
+                return (
+                    f"{details.get('emoji', '🌾')} **{crop_key.title()}** ({details.get('category', 'Crop')}):\n"
+                    f"• **Ideal Season:** {details.get('season', 'Optimal Season')}\n"
+                    f"• **Optimal Temperature:** {details.get('temp', '20-30°C')}\n"
+                    f"• **Water & Rainfall:** {details.get('water', 'Moderate')}\n"
+                    f"• **Soil Compatibility:** {details.get('soil', 'Loamy soil')}\n"
+                    f"• **Agronomist Tip:** {details.get('tip', 'Ensure balanced fertilization.')}"
+                )
+
+    # 9. General agricultural knowledge base
+    for entry in AGRI_KNOWLEDGE:
         for kw in entry['keywords']:
-            if kw in lower:
+            if kw in text:
                 return entry['reply']
 
+    # 10. Intelligent, Question-Aware Fallback
     return (
-        "That's an interesting farming question! For specific crop suggestions, try our prediction form above. "
-        "You can also ask me about Nitrogen, Phosphorus, Potassium, Soil pH, Irrigation, or specific crops like Rice, Coffee, and Apples."
+        "🌱 That's a great farming inquiry! Here is how FarmBot can assist you directly:\n"
+        "• **Specific Crops:** Ask *'How to grow Banana?'*, *'Rice rainfall'*, or *'Cotton fertilizer'*\n"
+        "• **Soil & Nutrients:** Ask *'Why are my leaves yellow?'*, *'How to raise soil pH'*, or *'Best fertilizer for maize'*\n"
+        "• **Weather & Climate:** Ask *'What crops for low rainfall?'* or *'What to grow in winter?'*\n"
+        "• **AI Predictions:** Provide values (e.g. *'N=90, P=42, K=43, temp=21, rain=200'*) for an instant ML recommendation!"
     )
 
 

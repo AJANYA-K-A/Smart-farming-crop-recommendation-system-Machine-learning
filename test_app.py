@@ -99,6 +99,23 @@ class CropRecommendationAppTests(unittest.TestCase):
         self.assertIn('Nitrogen', data['reply'])
         print("[PASS] test_06_chat_endpoint")
 
+    def test_06b_chat_inquiry_intelligence(self):
+        """Verify FarmBot answers precisely according to specific user inquiries."""
+        queries = [
+            ("Why are my leaves turning yellow?", "Nitrogen"),
+            ("Which crop should I grow in low rainfall?", "Mothbeans"),
+            ("What is the best crop for black soil?", "Cotton"),
+            ("How much water does rice need?", "Rice"),
+            ("What is the model accuracy?", "99.55%"),
+            ("N=90, P=42, K=43, temp=21, rain=200", "Instant ML Prediction"),
+        ]
+        for q, expected in queries:
+            res = self.client.post('/chat', json={'message': q})
+            self.assertEqual(res.status_code, 200)
+            data = res.get_json()
+            self.assertIn(expected, data.get('reply', ''))
+        print("[PASS] test_06b_chat_inquiry_intelligence (6 specific user inquiries verified)")
+
     def test_07_api_predict_rice(self):
         """Verify programmatic REST API /api/predict for Rice."""
         payload = {

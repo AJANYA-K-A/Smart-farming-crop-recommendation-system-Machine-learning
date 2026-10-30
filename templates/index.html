@@ -998,6 +998,51 @@
       transform: scale(1.05);
     }
 
+    /* Full FarmBot Workspace */
+    .farmbot-layout {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+      align-items: start;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 960px) {
+      .farmbot-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .farmbot-chat-console {
+      background: #ffffff;
+      border: 1.5px solid #d8eada;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .farmbot-messages {
+      height: 440px;
+      overflow-y: auto;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      background: #fafcfb;
+    }
+
+    .farmbot-sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .msg strong {
+      color: var(--primary-dark);
+    }
+
     /* Lightbox Modal */
     .lightbox-modal {
       display: none;
@@ -1128,7 +1173,7 @@
       <button type="button" class="tab-btn" onclick="switchTab('guideTab', this)">
         <span>📖 Agronomy & Soil Guide</span>
       </button>
-      <button type="button" class="tab-btn" onclick="toggleChat()">
+      <button type="button" class="tab-btn" id="farmbotTabBtn" onclick="switchTab('farmbotTab', this)">
         <span>🤖 FarmBot Assistant</span>
       </button>
     </div>
@@ -1602,6 +1647,112 @@
       </div>
     </div>
 
+    <!-- ─── Tab 4: Full FarmBot AI Assistant Workspace ─── -->
+    <div id="farmbotTab" class="tab-panel">
+      <div class="card" style="margin-bottom: 24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+          <div>
+            <h2 class="card-title" style="margin-bottom:4px;">🤖 FarmBot AI Precision Assistant</h2>
+            <p style="color:var(--text-muted); font-size:0.88rem; margin:0;">
+              Interactive agricultural advisor trained on 22 crops, N-P-K soil dynamics, pH correction, and smart irrigation.
+            </p>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="display:inline-block; width:10px; height:10px; background:#10b981; border-radius:50%; box-shadow:0 0 0 3px rgba(16,185,129,0.2);"></span>
+            <span style="font-size:0.82rem; font-weight:700; color:#065f46; background:#ecfdf5; border:1px solid #a7f3d0; padding:4px 12px; border-radius:100px;">
+              AI Agent Active • 99.55% Model Knowledge
+            </span>
+          </div>
+        </div>
+
+        <div class="farmbot-layout">
+          <!-- Main Chat Console -->
+          <div class="farmbot-chat-console">
+            <div class="farmbot-messages" id="mainChatMessages">
+              <div class="msg bot">
+                Hello! 👋 I'm <strong>FarmBot</strong>, your smart farming advisor. Ask me anything about crop varieties, soil nutrients (NPK), climate requirements, pH correction, or irrigation techniques!
+              </div>
+            </div>
+
+            <div class="typing-indicator" id="mainTypingIndicator" style="display:none; padding:10px 16px; font-style:italic; color:var(--text-muted); font-size:0.85rem; background:#f1f8f3; border-top:1px solid #e1eee5;">
+              ⏳ FarmBot is analyzing agricultural data...
+            </div>
+
+            <div class="chat-pills" style="margin:0; padding:10px 14px; background:#f7faf8; border-top:1px solid #edf4ee; flex-wrap:wrap;">
+              <span class="pill-item" onclick="askMain('Tell me how to grow Banana?')">🍌 Grow Banana</span>
+              <span class="pill-item" onclick="askMain('What are Maize soil requirements?')">🌽 Maize Soil</span>
+              <span class="pill-item" onclick="askMain('What does Nitrogen do for plants?')">🌱 Nitrogen Role</span>
+              <span class="pill-item" onclick="askMain('How to correct acidic soil pH?')">🧫 Fix Acidic pH</span>
+              <span class="pill-item" onclick="askMain('What are the benefits of drip irrigation?')">💧 Drip Irrigation</span>
+              <span class="pill-item" onclick="askMain('Tell me about the ML model accuracy')">📊 Model Accuracy</span>
+              <span class="pill-item" onclick="askMain('How to control pests organically?')">🐛 Organic IPM</span>
+            </div>
+
+            <div class="chat-input-row">
+              <input
+                type="text"
+                id="mainChatInput"
+                placeholder="Ask FarmBot anything (e.g. 'How to grow coffee?', 'Nitrogen deficiency', 'Optimal soil pH')..."
+                autocomplete="off"
+                onkeydown="if (event.key === 'Enter') sendMainChat();"
+              />
+              <button type="button" class="chat-send-btn" onclick="sendMainChat()" title="Send Question" style="width:auto; padding:0 18px; border-radius:100px; font-weight:700; font-size:0.9rem;">
+                ➤ Send
+              </button>
+              <button type="button" class="btn-clear" onclick="clearMainChat()" title="Clear Chat" style="padding:8px 14px; font-size:0.85rem;">
+                Reset
+              </button>
+            </div>
+          </div>
+
+          <!-- Side Companion: Agronomy Quick Reference -->
+          <aside class="farmbot-sidebar">
+            <div style="background:#f1f8f3; border:1px solid #d4e7da; border-radius:var(--radius-md); padding:16px;">
+              <div style="font-weight:700; font-size:0.95rem; color:var(--primary-dark); margin-bottom:10px;">💡 Recommended Questions</div>
+              <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; font-size:0.84rem;">
+                <li style="cursor:pointer; color:var(--primary); font-weight:600; padding:4px 0;" onclick="askMain('What is the best crop for black soil?')">
+                  • Best crop for black cotton soil?
+                </li>
+                <li style="cursor:pointer; color:var(--primary); font-weight:600; padding:4px 0;" onclick="askMain('How much rainfall does Rice need?')">
+                  • How much rainfall does Rice need?
+                </li>
+                <li style="cursor:pointer; color:var(--primary); font-weight:600; padding:4px 0;" onclick="askMain('What are symptoms of Potassium deficiency?')">
+                  • Potassium deficiency symptoms?
+                </li>
+                <li style="cursor:pointer; color:var(--primary); font-weight:600; padding:4px 0;" onclick="askMain('What chilling hours do apples need?')">
+                  • Apple chilling requirements?
+                </li>
+                <li style="cursor:pointer; color:var(--primary); font-weight:600; padding:4px 0;" onclick="askMain('How does Random Forest predict crops?')">
+                  • How does Random Forest predict?
+                </li>
+              </ul>
+            </div>
+
+            <div style="background:#fff; border:1px solid var(--border); border-radius:var(--radius-md); padding:16px;">
+              <div style="font-weight:700; font-size:0.95rem; color:var(--soil); margin-bottom:6px;">🌾 Instant Crop Navigator</div>
+              <p style="font-size:0.78rem; color:var(--text-muted); margin-bottom:10px;">Click any crop to query FarmBot:</p>
+              <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                <button type="button" class="preset-chip" style="font-size:0.75rem; padding:4px 8px;" onclick="askMain('Tell me about Rice')">🌾 Rice</button>
+                <button type="button" class="preset-chip" style="font-size:0.75rem; padding:4px 8px;" onclick="askMain('Tell me about Maize')">🌽 Maize</button>
+                <button type="button" class="preset-chip" style="font-size:0.75rem; padding:4px 8px;" onclick="askMain('Tell me about Chickpea')">🌱 Chickpea</button>
+                <button type="button" class="preset-chip" style="font-size:0.75rem; padding:4px 8px;" onclick="askMain('Tell me about Banana')">🍌 Banana</button>
+                <button type="button" class="preset-chip" style="font-size:0.75rem; padding:4px 8px;" onclick="askMain('Tell me about Mango')">🥭 Mango</button>
+                <button type="button" class="preset-chip" style="font-size:0.75rem; padding:4px 8px;" onclick="askMain('Tell me about Grapes')">🍇 Grapes</button>
+                <button type="button" class="preset-chip" style="font-size:0.75rem; padding:4px 8px;" onclick="askMain('Tell me about Apple')">🍏 Apple</button>
+                <button type="button" class="preset-chip" style="font-size:0.75rem; padding:4px 8px;" onclick="askMain('Tell me about Orange')">🍊 Orange</button>
+                <button type="button" class="preset-chip" style="font-size:0.75rem; padding:4px 8px;" onclick="askMain('Tell me about Coffee')">☕ Coffee</button>
+                <button type="button" class="preset-chip" style="font-size:0.75rem; padding:4px 8px;" onclick="askMain('Tell me about Cotton')">☁️ Cotton</button>
+                <button type="button" class="preset-chip" style="font-size:0.75rem; padding:4px 8px;" onclick="askMain('Tell me about Watermelon')">🍉 Watermelon</button>
+                <button type="button" class="preset-chip" style="font-size:0.75rem; padding:4px 8px;" onclick="askMain('Tell me about Coconut')">🥥 Coconut</button>
+                <button type="button" class="preset-chip" style="font-size:0.75rem; padding:4px 8px;" onclick="askMain('Tell me about Papaya')">🥭 Papaya</button>
+                <button type="button" class="preset-chip" style="font-size:0.75rem; padding:4px 8px;" onclick="askMain('Tell me about Jute')">🌿 Jute</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ─── Image Lightbox Modal ─── -->
@@ -1668,7 +1819,17 @@
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
       const target = document.getElementById(panelId);
-      if (target) target.classList.add('active');
+      if (target) {
+        target.classList.add('active');
+        if (panelId === 'farmbotTab') {
+          const win = document.getElementById('chatWindow');
+          if (win) win.classList.remove('open');
+          setTimeout(() => {
+            const inp = document.getElementById('mainChatInput');
+            if (inp) inp.focus();
+          }, 100);
+        }
+      }
       if (btn) btn.classList.add('active');
     }
 
@@ -1836,7 +1997,21 @@
       document.getElementById('lightboxModal').classList.remove('active');
     }
 
-    /* ── FarmBot Chatbot ── */
+    function formatBotReply(text) {
+      if (!text) return '';
+      let escaped = escapeHtml(text);
+      escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      escaped = escaped.replace(/\n/g, '<br>');
+      return escaped;
+    }
+
+    function escapeHtml(text) {
+      const d = document.createElement('div');
+      d.textContent = text;
+      return d.innerHTML;
+    }
+
+    /* ── Floating FarmBot Chat Widget ── */
     function toggleChat() {
       const win = document.getElementById('chatWindow');
       win.classList.toggle('open');
@@ -1852,7 +2027,7 @@
 
     async function sendChat() {
       const input = document.getElementById('chatInput');
-      const text = input.value.trim();
+      const text = input ? input.value.trim() : '';
       if (!text) return;
 
       const msgs = document.getElementById('chatMessages');
@@ -1862,7 +2037,7 @@
       input.value = '';
       msgs.scrollTop = msgs.scrollHeight;
 
-      typing.style.display = 'block';
+      if (typing) typing.style.display = 'block';
       msgs.scrollTop = msgs.scrollHeight;
 
       try {
@@ -1872,19 +2047,62 @@
           body: JSON.stringify({ message: text })
         });
         const data = await response.json();
-        typing.style.display = 'none';
-        msgs.innerHTML += `<div class="msg bot">${escapeHtml(data.reply)}</div>`;
+        if (typing) typing.style.display = 'none';
+        msgs.innerHTML += `<div class="msg bot">${formatBotReply(data.reply)}</div>`;
       } catch (err) {
-        typing.style.display = 'none';
+        if (typing) typing.style.display = 'none';
         msgs.innerHTML += `<div class="msg bot">I can help with crops, NPK nutrients, soil pH, or irrigation methods!</div>`;
       }
       msgs.scrollTop = msgs.scrollHeight;
     }
 
-    function escapeHtml(text) {
-      const d = document.createElement('div');
-      d.textContent = text;
-      return d.innerHTML;
+    /* ── Full Tab FarmBot Workspace Console ── */
+    function askMain(text) {
+      const input = document.getElementById('mainChatInput');
+      if (input) input.value = text;
+      sendMainChat();
+    }
+
+    function clearMainChat() {
+      const msgs = document.getElementById('mainChatMessages');
+      if (msgs) {
+        msgs.innerHTML = `
+          <div class="msg bot">
+            Hello! 👋 I'm <strong>FarmBot</strong>, your smart farming advisor. Ask me anything about crop varieties, soil nutrients (NPK), climate requirements, pH correction, or irrigation techniques!
+          </div>
+        `;
+      }
+    }
+
+    async function sendMainChat() {
+      const input = document.getElementById('mainChatInput');
+      const text = input ? input.value.trim() : '';
+      if (!text) return;
+
+      const msgs = document.getElementById('mainChatMessages');
+      const typing = document.getElementById('mainTypingIndicator');
+
+      msgs.innerHTML += `<div class="msg user">${escapeHtml(text)}</div>`;
+      input.value = '';
+      msgs.scrollTop = msgs.scrollHeight;
+
+      if (typing) typing.style.display = 'block';
+      msgs.scrollTop = msgs.scrollHeight;
+
+      try {
+        const response = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+        const data = await response.json();
+        if (typing) typing.style.display = 'none';
+        msgs.innerHTML += `<div class="msg bot">${formatBotReply(data.reply)}</div>`;
+      } catch (err) {
+        if (typing) typing.style.display = 'none';
+        msgs.innerHTML += `<div class="msg bot">I can help with all 22 crops, NPK nutrients, soil pH, or irrigation methods!</div>`;
+      }
+      msgs.scrollTop = msgs.scrollHeight;
     }
 
     // Keep clean initial state on load; predictions run only after user submits or selects preset
