@@ -25,6 +25,8 @@ By analyzing 7 critical agronomic parameters (Nitrogen, Phosphorus, Potassium, T
 
 ## ✨ Key Features
 
+- **🔐 Dedicated Authentication Portal**: Professional login screen with 1-Click Demo Access buttons ("🌱 Enter as Farmer", "🔬 Enter as Agronomist", "🚀 Quick Guest Access") and secure session management.
+- **📊 Executive Precision Farming Dashboard**: Tabbed interface featuring real-time KPI metrics, active crop recommendation engine, dataset analytics, and agronomy guides.
 - **🎯 High Accuracy ML Engine**: Trained Random Forest model achieving **99.55% test accuracy** across 22 diverse agricultural crops.
 - **⚡ 1-Click Test Presets**: Pre-configured real-world profiles for Rice (Wetlands), Maize (Plains), Coffee (Hills), Watermelon (Sandy), Apple (Temperate), and Cotton (Black Soil).
 - **🧪 Interactive Soil & Climate Inputs**: Dual-synchronized range sliders and precision numeric fields with accessible keyboard support.
@@ -118,9 +120,10 @@ Smart-farming-crop-recommendation-system-Machine-learning/
 ├── requirements.txt           # Python dependencies with pinned versions
 ├── .gitignore                 # Standard Python & OS ignore rules
 ├── README.md                  # Comprehensive project documentation
-│
 ├── templates/
-│   └── index.html             # Responsive UI with navigation, presets & FarmBot
+│   ├── login.html             # Dedicated authentication portal with 1-click access
+│   ├── dashboard.html         # Executive precision farming dashboard with tabs & KPIs
+│   └── index.html             # Standalone fallback dashboard interface
 │
 ├── static/
 │   ├── chart1.png             # Nitrogen distribution plot

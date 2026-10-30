@@ -1,6 +1,7 @@
 """
 Smart Farming Crop Recommendation System - Flask Application
 Predicts optimal crops based on soil nutrients and climatic parameters.
+Features Login Authentication, Executive Dashboard, REST APIs, and FarmBot AI.
 """
 
 import os
@@ -12,7 +13,7 @@ import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 import seaborn as sns
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 
 # ─── App & Path Configuration ────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -25,6 +26,7 @@ DATA_PATH = os.path.join(BASE_DIR, 'Crop_recommendation.csv')
 os.makedirs(STATIC_DIR, exist_ok=True)
 
 app = Flask(__name__, static_folder=STATIC_DIR, template_folder=TEMPLATES_DIR)
+app.secret_key = os.environ.get('SECRET_KEY', 'cropiq-precision-farming-key-2026')
 
 # ─── Load ML Artifacts & Dataset ─────────────────────────────────────────────
 model = joblib.load(MODEL_PATH)
@@ -354,70 +356,73 @@ def get_response(user_input: str) -> str:
     )
 
 
-# ─── Routes ──────────────────────────────────────────────────────────────────
-@app.route('/', methods=['GET', 'POST'])
-def home():
-    prediction_text = ''
-    crop_info = None
-    confidence = None
-    form_vals = {col: '' for col in ['nitrogen', 'phosphorus', 'potassium',
-                                      'temperature', 'humidity', 'ph', 'rainfall']}
+# ─── Auth & Page Routes ──────────────────────────────────────────────────────
+@app.route('/')
+def index():
+    """Entry point: starts at login page if not authenticated, else dashboard."""
+    if 'user' in session:
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
 
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    """Login portal page."""
+    error = None
     if request.method == 'POST':
-        try:
-            nitrogen = float(request.form.get('nitrogen', 0))
-            phosphorus = float(request.form.get('phosphorus', 0))
-            potassium = float(request.form.get('potassium', 0))
-            temperature = float(request.form.get('temperature', 0))
-            humidity = float(request.form.get('humidity', 0))
-            ph = float(request.form.get('ph', 0))
-            rainfall = float(request.form.get('rainfall', 0))
+        email = request.form.get('email', '').strip()
+        password = request.form.get('password', '').strip()
 
-            form_vals = {
-                'nitrogen': nitrogen,
-                'phosphorus': phosphorus,
-                'potassium': potassium,
-                'temperature': temperature,
-                'humidity': humidity,
-                'ph': ph,
-                'rainfall': rainfall
+        if email and password:
+            lower_email = email.lower()
+            if 'farmer' in lower_email:
+                name = 'Farmer John'
+                role = 'Farm Operations'
+            elif 'agro' in lower_email or 'agronomist' in lower_email:
+                name = 'Dr. Sarah Green'
+                role = 'Lead Agronomist'
+            elif 'guest' in lower_email:
+                name = 'Guest Explorer'
+                role = 'Guest Researcher'
+            else:
+                user_part = email.split('@')[0].replace('.', ' ').replace('_', ' ')
+                name = user_part.title()
+                role = 'Agriculturalist'
+
+            session['user'] = {
+                'email': email,
+                'name': name,
+                'role': role
             }
+            return redirect(url_for('dashboard'))
+        else:
+            error = 'Please enter both email/username and password.'
 
-            # Predict using a DataFrame to preserve feature names
-            input_df = pd.DataFrame([[nitrogen, phosphorus, potassium,
-                                      temperature, humidity, ph, rainfall]],
-                                    columns=FEATURE_COLS)
-            prediction = model.predict(input_df)
-            probs = model.predict_proba(input_df)[0]
-            predicted_crop = label_encoder.inverse_transform(prediction)[0]
-            confidence = round(float(np.max(probs)) * 100, 1)
-
-            prediction_text = f"✅ Recommended Crop: {predicted_crop}"
-            crop_info = CROP_DATA.get(predicted_crop.lower(), {
-                'emoji': '🌾',
-                'category': 'Agricultural Crop',
-                'season': 'Optimal Growing Season',
-                'water': 'As per regional rainfall',
-                'soil': 'Well-drained fertile soil',
-                'temp': f'{temperature}°C',
-                'tip': 'Follow standard regional agronomic package of practices.'
-            })
-            crop_info['name'] = predicted_crop.capitalize()
-
-        except ValueError:
-            prediction_text = '⚠️ Please enter valid numeric values for all parameters.'
-        except Exception as e:
-            prediction_text = f'⚠️ Prediction error: {str(e)}'
-
-    return render_template(
-        'index.html',
-        prediction_text=prediction_text,
-        crop_info=crop_info,
-        confidence=confidence,
-        **form_vals
-    )
+    return render_template('login.html', error=error)
 
 
+@app.route('/logout')
+def logout():
+    """Sign out and return to login."""
+    session.clear()
+    return redirect(url_for('login'))
+
+
+@app.route('/dashboard', methods=['GET', 'POST'])
+def dashboard():
+    """Executive Smart Farming Dashboard."""
+    # Ensure guest session if visiting directly
+    if 'user' not in session:
+        session['user'] = {
+            'email': 'farmer@smartfarm.org',
+            'name': 'Farmer John',
+            'role': 'Farm Manager'
+        }
+
+    return render_template('dashboard.html')
+
+
+# ─── APIs ────────────────────────────────────────────────────────────────────
 @app.route('/chat', methods=['POST'])
 def chat():
     """JSON chatbot endpoint connecting the UI to FarmBot backend."""
@@ -429,17 +434,17 @@ def chat():
 
 @app.route('/api/predict', methods=['POST'])
 def api_predict():
-    """RESTful JSON endpoint for programmatic prediction."""
+    """RESTful JSON endpoint for programmatic prediction with clean response."""
     try:
         data = request.get_json(force=True)
         values = [
-            float(data['nitrogen']),
-            float(data['phosphorus']),
-            float(data['potassium']),
-            float(data['temperature']),
-            float(data['humidity']),
-            float(data['ph']),
-            float(data['rainfall'])
+            float(data.get('nitrogen', 0)),
+            float(data.get('phosphorus', 0)),
+            float(data.get('potassium', 0)),
+            float(data.get('temperature', 0)),
+            float(data.get('humidity', 0)),
+            float(data.get('ph', 0)),
+            float(data.get('rainfall', 0))
         ]
         input_df = pd.DataFrame([values], columns=FEATURE_COLS)
         pred = model.predict(input_df)
@@ -451,10 +456,18 @@ def api_predict():
             'status': 'success',
             'recommended_crop': crop_name,
             'confidence_percent': conf,
-            'crop_details': CROP_DATA.get(crop_name.lower(), {})
+            'crop_details': CROP_DATA.get(crop_name.lower(), {
+                'emoji': '🌾',
+                'category': 'Agricultural Crop',
+                'season': 'Optimal Season',
+                'water': 'As per regional rainfall',
+                'soil': 'Well-drained fertile soil',
+                'temp': f"{values[3]}°C",
+                'tip': 'Apply recommended local agronomic package of practices.'
+            })
         })
     except KeyError as ke:
-        return jsonify({'status': 'error', 'message': f'Missing required field: {str(ke)}'}), 400
+        return jsonify({'status': 'error', 'message': f'Missing parameter: {str(ke)}'}), 400
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
