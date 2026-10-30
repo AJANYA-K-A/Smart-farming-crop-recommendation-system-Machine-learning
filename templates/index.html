@@ -1,1065 +1,1756 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CropIQ — Smart Farming Intelligence</title>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      /* ─── Design Tokens ─────────────────────────────── */
-      :root {
-        --soil: #1a1208;
-        --bark: #2e1f0e;
-        --moss: #2d4a1e;
-        --leaf: #4a7c35;
-        --sprout: #7db65a;
-        --sun: #e8c84a;
-        --cream: #f5f0e8;
-        --mist: #eaf3e4;
-        --text: #1a1208;
-        --muted: #6b5c40;
-        --card-bg: #ffffffcc;
-        --radius: 16px;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AI-Powered Smart Farming Crop Recommendation System using Machine Learning to optimize agricultural yield based on soil and weather parameters." />
+  <title>Smart Farming — AI Crop Recommendation Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet" />
+  <style>
+    /* ─── Design Tokens & Theme Variables ─────────────────────── */
+    :root {
+      --primary: #2d6a4f;
+      --primary-dark: #1b4332;
+      --primary-light: #52b788;
+      --accent: #d8f3dc;
+      --sun: #e9c46a;
+      --earth: #583101;
+      --soil-dark: #1f2421;
+      --bg-cream: #f8faf5;
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --card-border: rgba(45, 106, 79, 0.15);
+      --text-main: #192e22;
+      --text-muted: #526359;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 22px;
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 8px 30px rgba(45, 106, 79, 0.08);
+      --shadow-lg: 0 16px 48px rgba(45, 106, 79, 0.14);
+      --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-      /* ─── Reset & Base ──────────────────────────────── */
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
+    /* ─── Global Reset & Typography ───────────────────────────── */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-      body {
-        font-family: "DM Sans", sans-serif;
-        background-color: var(--mist);
-        color: var(--text);
-        min-height: 100vh;
-        overflow-x: hidden;
-      }
+    html {
+      scroll-behavior: smooth;
+    }
 
-      /* ─── Animated background ───────────────────────── */
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background:
-          radial-gradient(
-            ellipse 80% 60% at 10% 20%,
-            #c8e6b055 0%,
-            transparent 60%
-          ),
-          radial-gradient(
-            ellipse 60% 80% at 90% 80%,
-            #a3d97055 0%,
-            transparent 60%
-          ),
-          radial-gradient(
-            ellipse 40% 40% at 50% 50%,
-            #e8c84a22 0%,
-            transparent 70%
-          );
-        pointer-events: none;
-        z-index: 0;
-      }
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-cream);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
 
-      /* ─── Layout wrapper ────────────────────────────── */
-      .page {
-        position: relative;
-        z-index: 1;
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 48px 24px 80px;
-      }
+    /* Background Ambient Gradients */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background:
+        radial-gradient(circle at 10% 15%, rgba(183, 228, 199, 0.45) 0%, transparent 45%),
+        radial-gradient(circle at 90% 85%, rgba(149, 213, 178, 0.40) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(233, 196, 106, 0.12) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: -1;
+    }
 
-      /* ─── Header ────────────────────────────────────── */
-      header {
-        text-align: center;
-        margin-bottom: 52px;
-      }
+    /* ─── Sticky Navbar ───────────────────────────────────────── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 14px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: var(--transition);
+    }
 
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: var(--moss);
-        color: var(--sprout);
-        font-size: 11px;
-        font-weight: 500;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        padding: 6px 14px;
-        border-radius: 100px;
-        margin-bottom: 20px;
-      }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--primary-dark);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
 
-      .badge::before {
-        content: "●";
-        font-size: 8px;
-        animation: pulse 2s infinite;
-      }
+    .nav-brand-badge {
+      background: var(--accent);
+      color: var(--primary-dark);
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
 
-      @keyframes pulse {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.3;
-        }
-      }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      list-style: none;
+    }
 
-      h1 {
-        font-family: "Playfair Display", serif;
-        font-size: clamp(2.4rem, 6vw, 4rem);
-        font-weight: 900;
-        line-height: 1.1;
-        color: var(--soil);
-        letter-spacing: -0.02em;
-        margin-bottom: 14px;
-      }
+    .nav-link {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+    }
 
-      h1 span {
-        color: var(--leaf);
-      }
+    .nav-link:hover, .nav-link.active {
+      color: var(--primary);
+      background: rgba(82, 183, 136, 0.12);
+    }
 
-      .subtitle {
-        font-size: 1rem;
-        color: var(--muted);
-        max-width: 460px;
-        margin: 0 auto;
-        line-height: 1.6;
-        font-weight: 300;
-      }
+    .nav-btn-github {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--primary-dark);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: var(--transition);
+    }
 
-      /* ─── Two-column layout ─────────────────────────── */
-      .main-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 32px;
-        align-items: start;
-      }
+    .nav-btn-github:hover {
+      background: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 14px rgba(27, 67, 50, 0.25);
+    }
 
-      @media (max-width: 720px) {
-        .main-grid {
-          grid-template-columns: 1fr;
-        }
-      }
-
-      /* ─── Card ──────────────────────────────────────── */
-      .card {
-        background: var(--card-bg);
-        backdrop-filter: blur(12px);
-        border-radius: var(--radius);
-        border: 1px solid #d4e8c488;
-        padding: 36px;
-        box-shadow:
-          0 8px 40px #2d4a1e14,
-          0 2px 8px #0000000a;
-      }
-
-      .card-title {
-        font-family: "Playfair Display", serif;
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: var(--soil);
-        margin-bottom: 28px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .card-title::after {
-        content: "";
-        flex: 1;
-        height: 1px;
-        background: linear-gradient(to right, #4a7c3530, transparent);
-      }
-
-      /* ─── Form fields ───────────────────────────────── */
-      .field {
-        margin-bottom: 18px;
-      }
-
-      label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 0.8rem;
-        font-weight: 500;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--muted);
-        margin-bottom: 6px;
-      }
-
-      .field-icon {
-        width: 20px;
-        height: 20px;
-        border-radius: 6px;
-        background: var(--moss);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 11px;
-      }
-
-      input[type="number"] {
-        width: 100%;
-        padding: 11px 16px;
-        border: 1.5px solid #c8dcb8;
-        border-radius: 10px;
-        background: #f9fcf6;
-        font-family: "DM Sans", sans-serif;
-        font-size: 0.95rem;
-        color: var(--text);
-        transition:
-          border-color 0.2s,
-          box-shadow 0.2s;
-        outline: none;
-        -moz-appearance: textfield;
-      }
-
-      input[type="number"]::-webkit-inner-spin-button,
-      input[type="number"]::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-      }
-
-      input[type="number"]:focus {
-        border-color: var(--leaf);
-        box-shadow: 0 0 0 3px #4a7c3518;
-        background: #fff;
-      }
-
-      /* ─── Range slider ──────────────────────────────── */
-      .range-group {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      input[type="range"] {
-        flex: 1;
-        height: 4px;
-        border-radius: 10px;
-        accent-color: var(--leaf);
-        cursor: pointer;
-      }
-
-      .range-val {
-        min-width: 44px;
-        text-align: right;
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: var(--leaf);
-      }
-
-      /* ─── Submit button ─────────────────────────────── */
-      .btn {
-        width: 100%;
-        padding: 14px;
-        background: linear-gradient(135deg, var(--moss), var(--leaf));
-        color: #fff;
-        border: none;
-        border-radius: 12px;
-        font-family: "DM Sans", sans-serif;
-        font-size: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition:
-          transform 0.15s,
-          box-shadow 0.15s,
-          filter 0.15s;
-        margin-top: 8px;
-        letter-spacing: 0.02em;
-      }
-
-      .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px #4a7c3540;
-        filter: brightness(1.08);
-      }
-
-      .btn:active {
-        transform: translateY(0);
-      }
-
-      /* ─── Result box ────────────────────────────────── */
-      .result-box {
-        margin-top: 20px;
-        padding: 18px 22px;
-        border-radius: 12px;
-        font-weight: 500;
-        font-size: 1rem;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        animation: slideUp 0.4s ease;
-      }
-
-      @keyframes slideUp {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-
-      .result-success {
-        background: #edf7e7;
-        border: 1.5px solid #a3d270;
-        color: var(--moss);
-      }
-
-      .result-error {
-        background: #fff4ed;
-        border: 1.5px solid #f5a77a;
-        color: #8c3a00;
-      }
-
-      .result-crop {
-        font-family: "Playfair Display", serif;
-        font-size: 1.35rem;
-        font-weight: 700;
-      }
-
-      /* ─── Soil stats panel ──────────────────────────── */
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
-        margin-bottom: 24px;
-      }
-
-      .stat-chip {
-        background: var(--mist);
-        border-radius: 10px;
-        padding: 12px 10px;
-        text-align: center;
-        border: 1px solid #d0e8c0;
-      }
-
-      .stat-chip .val {
-        font-family: "Playfair Display", serif;
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: var(--leaf);
-        display: block;
-      }
-
-      .stat-chip .lbl {
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--muted);
-        margin-top: 2px;
-      }
-
-      /* ─── Charts section ────────────────────────────── */
-      .charts-section {
-        margin-top: 64px;
-      }
-
-      .section-head {
-        text-align: center;
-        margin-bottom: 36px;
-      }
-
-      .section-head h2 {
-        font-family: "Playfair Display", serif;
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--soil);
-      }
-
-      .section-head p {
-        color: var(--muted);
-        font-size: 0.9rem;
-        margin-top: 6px;
-      }
-
-      .charts-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 24px;
-      }
-
-      .chart-card {
-        background: var(--card-bg);
-        backdrop-filter: blur(8px);
-        border-radius: var(--radius);
-        border: 1px solid #d4e8c488;
-        overflow: hidden;
-        box-shadow: 0 4px 20px #2d4a1e0d;
-        transition:
-          transform 0.2s,
-          box-shadow 0.2s;
-      }
-
-      .chart-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 32px #2d4a1e1a;
-      }
-
-      .chart-label {
-        padding: 12px 16px 4px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.1em;
-        color: var(--muted);
-      }
-
-      .chart-card img {
-        width: 100%;
-        height: auto;
-        display: block;
-        border-top: 1px solid #e8f0e0;
-      }
-
-      /* ─── Charts placeholder (before first prediction) ── */
-      .charts-placeholder {
-        text-align: center;
-        padding: 48px 24px;
-        background: var(--card-bg);
-        border-radius: var(--radius);
-        border: 1.5px dashed #b0d090;
-        color: var(--muted);
-      }
-
-      .charts-placeholder .ph-icon {
-        font-size: 3rem;
-        display: block;
-        margin-bottom: 12px;
-      }
-
-      .charts-placeholder p {
-        font-size: 0.95rem;
-        line-height: 1.6;
-      }
-
-      .charts-placeholder strong {
-        color: var(--leaf);
-      }
-
-      /* ─── Chatbot ────────────────────────────────────── */
-      .chat-fab {
-        position: fixed;
-        bottom: 28px;
-        right: 28px;
-        z-index: 100;
-      }
-
-      #chat-toggle {
-        width: 58px;
-        height: 58px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, var(--moss), var(--leaf));
-        border: none;
-        color: white;
-        font-size: 1.5rem;
-        cursor: pointer;
-        box-shadow: 0 4px 20px #2d4a1e44;
-        transition: transform 0.2s;
-      }
-
-      #chat-toggle:hover {
-        transform: scale(1.08);
-      }
-
-      .chat-window {
-        position: fixed;
-        bottom: 100px;
-        right: 28px;
-        width: 320px;
-        background: #fff;
-        border-radius: 20px;
-        box-shadow: 0 12px 48px #0000001a;
-        border: 1px solid #d4e8c4;
-        z-index: 100;
-        overflow: hidden;
+    @media (max-width: 860px) {
+      .nav-links {
         display: none;
-        flex-direction: column;
-        max-height: 420px;
       }
+    }
 
-      .chat-window.open {
-        display: flex;
-        animation: popIn 0.25s ease;
+    /* ─── Hero Section ────────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 56px 20px 36px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(45, 106, 79, 0.1);
+      color: var(--primary-dark);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 6px 16px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(45, 106, 79, 0.2);
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2.4rem, 5.5vw, 4rem);
+      font-weight: 900;
+      line-height: 1.15;
+      color: var(--soil-dark);
+      letter-spacing: -0.025em;
+      margin-bottom: 18px;
+    }
+
+    .hero-title span {
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 620px;
+      margin: 0 auto 28px;
+      font-weight: 400;
+    }
+
+    /* ─── Preset Pills Bar ────────────────────────────────────── */
+    .presets-container {
+      max-width: 1140px;
+      margin: 0 auto 36px;
+      padding: 0 20px;
+    }
+
+    .presets-box {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .presets-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .preset-chip {
+      background: var(--bg-cream);
+      border: 1px solid #cce3de;
+      color: var(--primary-dark);
+      padding: 7px 14px;
+      border-radius: 100px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .preset-chip:hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(45, 106, 79, 0.15);
+    }
+
+    /* ─── Main Two-Column Layout ──────────────────────────────── */
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 32px;
+      align-items: start;
+      margin-bottom: 70px;
+    }
+
+    @media (max-width: 920px) {
+      .main-grid {
+        grid-template-columns: 1fr;
       }
+    }
 
-      @keyframes popIn {
-        from {
-          opacity: 0;
-          transform: scale(0.9) translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1) translateY(0);
-        }
+    /* ─── Card Styling ────────────────────────────────────────── */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 34px;
+      box-shadow: var(--shadow-md);
+      transition: var(--transition);
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.45rem;
+      font-weight: 800;
+      color: var(--soil-dark);
+      margin-bottom: 22px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card-title::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(to right, rgba(45, 106, 79, 0.25), transparent);
+    }
+
+    /* ─── Form Controls & Accessibility ───────────────────────── */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 580px) {
+      .form-row {
+        grid-template-columns: 1fr;
       }
+    }
 
-      .chat-header {
-        background: linear-gradient(135deg, var(--moss), var(--leaf));
-        color: #fff;
-        padding: 14px 18px;
-        font-weight: 500;
-        font-size: 0.95rem;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+    .field {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--soil-dark);
+      margin-bottom: 6px;
+    }
+
+    .label-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      font-size: 1rem;
+      pointer-events: none;
+      color: var(--primary);
+    }
+
+    input[type="number"] {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px 14px 12px 42px;
+      border: 1.5px solid #d2e4d9;
+      border-radius: var(--radius-md);
+      background: #fbfdfa;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: var(--text-main);
+      transition: var(--transition);
+      outline: none;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.14);
+      background: #fff;
+    }
+
+    /* Range + Number Synchronizer */
+    .range-sync {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      height: 6px;
+      border-radius: 10px;
+      background: #cde2d6;
+      outline: none;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    .range-display-badge {
+      min-width: 46px;
+      text-align: center;
+      background: var(--accent);
+      color: var(--primary-dark);
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* Action Buttons */
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn-submit {
+      flex: 1;
+      min-height: 52px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-md);
+      font-size: 1.02rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px rgba(27, 67, 50, 0.2);
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(27, 67, 50, 0.3);
+      filter: brightness(1.06);
+    }
+
+    .btn-reset {
+      background: transparent;
+      border: 1.5px solid #d2e4d9;
+      color: var(--text-muted);
+      border-radius: var(--radius-md);
+      padding: 0 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-reset:hover {
+      background: #edf5f0;
+      color: var(--primary-dark);
+    }
+
+    /* ─── Result Showcase Card ────────────────────────────────── */
+    .result-container {
+      margin-top: 26px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-card-success {
+      background: linear-gradient(145deg, #ffffff, #f1faee);
+      border: 2px solid var(--primary-light);
+      padding: 24px;
+      border-radius: var(--radius-md);
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .result-tag {
+      background: var(--accent);
+      color: var(--primary-dark);
+      font-weight: 800;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 4px 12px;
+      border-radius: 100px;
+    }
+
+    .result-crop-name {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+
+    .confidence-meter {
+      margin-bottom: 20px;
+    }
+
+    .confidence-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 6px;
+    }
+
+    .progress-track {
+      background: #e0eee4;
+      height: 9px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(to right, var(--primary-light), var(--primary));
+      border-radius: 10px;
+      transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .crop-profile-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .profile-item {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #d8eada;
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+    }
+
+    .profile-item-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+
+    .profile-item-value {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--soil-dark);
+    }
+
+    .farming-tip-box {
+      margin-top: 14px;
+      background: rgba(233, 196, 106, 0.15);
+      border-left: 4px solid var(--sun);
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      color: var(--earth);
+      line-height: 1.45;
+    }
+
+    /* ─── Parameter Guide & Info Panel ────────────────────────── */
+    .guide-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .guide-chip {
+      background: #f1f8f3;
+      border: 1px solid #d4e7da;
+      border-radius: var(--radius-md);
+      padding: 14px 10px;
+      text-align: center;
+    }
+
+    .guide-chip-val {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--primary);
+      display: block;
+    }
+
+    .guide-chip-lbl {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 3px;
+    }
+
+    .guide-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .guide-list-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .guide-list-icon {
+      background: var(--accent);
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.85rem;
+    }
+
+    /* Workflow Stepper */
+    .workflow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .step-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 3px 10px rgba(45, 106, 79, 0.25);
+    }
+
+    .step-content-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--soil-dark);
+      margin-bottom: 2px;
+    }
+
+    .step-content-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* ─── Charts Gallery Section ──────────────────────────────── */
+    .section-head {
+      text-align: center;
+      margin-bottom: 42px;
+    }
+
+    .section-head h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 2.3rem;
+      font-weight: 800;
+      color: var(--soil-dark);
+      letter-spacing: -0.02em;
+    }
+
+    .section-head p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      margin-top: 8px;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 26px;
+      margin-bottom: 80px;
+    }
+
+    .chart-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(8px);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--card-border);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      cursor: pointer;
+    }
+
+    .chart-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary-light);
+    }
+
+    .chart-header {
+      padding: 14px 18px;
+      background: rgba(255, 255, 255, 0.95);
+      border-bottom: 1px solid #edf4ee;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chart-title {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .chart-zoom-icon {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+
+    .chart-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+
+    .chart-card:hover img {
+      transform: scale(1.02);
+    }
+
+    /* Lightbox Modal */
+    .lightbox-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 26, 20, 0.85);
+      backdrop-filter: blur(10px);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+    }
+
+    .lightbox-modal.active {
+      display: flex;
+    }
+
+    .lightbox-content {
+      position: relative;
+      max-width: 900px;
+      max-height: 88vh;
+      background: #fff;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 75vh;
+      display: block;
+      border-radius: var(--radius-sm);
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: -16px;
+      right: -16px;
+      width: 36px;
+      height: 36px;
+      background: var(--primary-dark);
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ─── Interactive FarmBot Chatbot ─────────────────────────── */
+    .chat-fab {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 1200;
+    }
+
+    #chat-toggle {
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      border: none;
+      color: #fff;
+      font-size: 1.6rem;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(27, 67, 50, 0.35);
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #chat-toggle:hover {
+      transform: scale(1.08) rotate(5deg);
+    }
+
+    .chat-window {
+      position: fixed;
+      bottom: 104px;
+      right: 30px;
+      width: 380px;
+      max-width: calc(100vw - 40px);
+      height: 520px;
+      max-height: calc(100vh - 140px);
+      background: #ffffff;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+      border: 1px solid var(--card-border);
+      z-index: 1200;
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+    }
+
+    .chat-window.open {
+      display: flex;
+      animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.92) translateY(18px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .chat-header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chat-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chat-status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #55f388;
+      box-shadow: 0 0 8px #55f388;
+    }
+
+    .chat-close-btn {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1.2rem;
+      cursor: pointer;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+
+    .chat-close-btn:hover {
+      opacity: 1;
+    }
+
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: #fdfdfd;
+    }
+
+    .msg {
+      max-width: 82%;
+      padding: 11px 16px;
+      border-radius: var(--radius-md);
+      font-size: 0.9rem;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .msg.bot {
+      background: #edf5f0;
+      color: var(--soil-dark);
+      border-bottom-left-radius: 4px;
+      align-self: flex-start;
+      border: 1px solid #e1eee5;
+    }
+
+    .msg.user {
+      background: var(--primary);
+      color: #fff;
+      border-bottom-right-radius: 4px;
+      align-self: flex-end;
+    }
+
+    .typing-indicator {
+      display: none;
+      align-self: flex-start;
+      background: #edf5f0;
+      padding: 8px 14px;
+      border-radius: var(--radius-md);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .chat-quick-pills {
+      padding: 8px 14px;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      background: #f7faf8;
+      border-top: 1px solid #edf4ee;
+    }
+
+    .quick-pill {
+      font-size: 0.75rem;
+      background: #fff;
+      border: 1px solid #d4e7da;
+      padding: 4px 10px;
+      border-radius: 100px;
+      cursor: pointer;
+      white-space: nowrap;
+      color: var(--primary-dark);
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .quick-pill:hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .chat-input-row {
+      display: flex;
+      padding: 12px;
+      gap: 8px;
+      background: #fff;
+      border-top: 1px solid #edf4ee;
+    }
+
+    .chat-input-row input {
+      flex: 1;
+      border: 1.5px solid #d2e4d9;
+      border-radius: 100px;
+      padding: 10px 18px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .chat-input-row input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.12);
+    }
+
+    .chat-send-btn {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    .chat-send-btn:hover {
+      background: var(--primary-dark);
+      transform: scale(1.05);
+    }
+
+    /* ─── Footer ──────────────────────────────────────────────── */
+    footer {
+      background: #111e17;
+      color: #d1dfd6;
+      padding: 56px 20px 32px;
+      margin-top: 70px;
+      border-top: 1px solid rgba(82, 183, 136, 0.2);
+    }
+
+    .footer-content {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 768px) {
+      .footer-content {
+        grid-template-columns: 1fr;
+        gap: 28px;
       }
+    }
 
-      .chat-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--sun);
-        animation: pulse 1.5s infinite;
-      }
+    .footer-brand {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 12px;
+    }
 
-      .chat-messages {
-        flex: 1;
-        overflow-y: auto;
-        padding: 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
+    .footer-desc {
+      font-size: 0.9rem;
+      color: #9cb5a5;
+      line-height: 1.6;
+      max-width: 440px;
+    }
 
-      .msg {
-        max-width: 80%;
-        padding: 9px 13px;
-        border-radius: 14px;
-        font-size: 0.88rem;
-        line-height: 1.45;
-      }
+    .footer-col-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
 
-      .msg.bot {
-        background: var(--mist);
-        border-bottom-left-radius: 4px;
-        align-self: flex-start;
-      }
+    .footer-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
 
-      .msg.user {
-        background: var(--leaf);
-        color: #fff;
-        border-bottom-right-radius: 4px;
-        align-self: flex-end;
-      }
+    .footer-links a {
+      color: #9cb5a5;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
 
-      .chat-input-row {
-        display: flex;
-        padding: 10px;
-        gap: 8px;
-        border-top: 1px solid #eaf3e4;
-      }
+    .footer-links a:hover {
+      color: var(--primary-light);
+    }
 
-      .chat-input-row input {
-        flex: 1;
-        border: 1.5px solid #c8dcb8;
-        border-radius: 20px;
-        padding: 8px 14px;
-        font-family: "DM Sans", sans-serif;
-        font-size: 0.88rem;
-        outline: none;
-      }
+    .footer-bottom {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 0.85rem;
+      color: #7b9986;
+    }
+  </style>
+</head>
+<body>
 
-      .chat-input-row input:focus {
-        border-color: var(--leaf);
-      }
+  <!-- ─── Sticky Navbar ───────────────────────────────────────── -->
+  <nav class="navbar" id="navbar">
+    <a href="#" class="nav-brand">
+      🌱 CropIQ
+      <span class="nav-brand-badge">Smart Farming</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#predictor" class="nav-link active">⚡ Predictor</a></li>
+      <li><a href="#presets" class="nav-link">🧪 1-Click Presets</a></li>
+      <li><a href="#guide" class="nav-link">📖 Parameter Guide</a></li>
+      <li><a href="#insights" class="nav-link">📊 Insights</a></li>
+      <li><a href="javascript:void(0)" onclick="toggleChat()" class="nav-link">🤖 FarmBot</a></li>
+    </ul>
+    <a href="https://github.com/AJANYA-K-A/Smart-farming-crop-recommendation-system-Machine-learning" target="_blank" rel="noopener noreferrer" class="nav-btn-github">
+      <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
+      </svg>
+      GitHub Repo
+    </a>
+  </nav>
 
-      .chat-send {
-        background: var(--leaf);
-        border: none;
-        border-radius: 50%;
-        width: 36px;
-        height: 36px;
-        color: #fff;
-        cursor: pointer;
-        font-size: 1rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+  <!-- ─── Hero Section ────────────────────────────────────────── -->
+  <header class="hero">
+    <div class="hero-badge">🚜 Precision Agriculture & AI Intelligence</div>
+    <h1 class="hero-title">Smart Crop Recommendation<br /><span>Driven by Machine Learning</span></h1>
+    <p class="hero-desc">
+      Empowering farmers and agronomists with data-driven crop suggestions. Enter your soil macronutrients and climate parameters to discover the crop most suited for maximum yield.
+    </p>
+  </header>
 
-      /* ─── Leaf decorator ────────────────────────────── */
-      .deco-leaf {
-        position: fixed;
-        pointer-events: none;
-        opacity: 0.08;
-        font-size: 180px;
-        user-select: none;
-      }
-      .deco-leaf.tl {
-        top: -20px;
-        left: -30px;
-        transform: rotate(-30deg);
-      }
-      .deco-leaf.br {
-        bottom: -20px;
-        right: -30px;
-        transform: rotate(150deg);
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Decorative leaves -->
-    <div class="deco-leaf tl">🌿</div>
-    <div class="deco-leaf br">🌿</div>
+  <!-- ─── 1-Click Preset Bar ──────────────────────────────────── -->
+  <div class="presets-container" id="presets">
+    <div class="presets-box">
+      <div class="presets-label">
+        <span>⚡ Quick Test Presets:</span>
+      </div>
+      <button type="button" class="preset-chip" onclick="applyPreset(90, 42, 43, 20.9, 82.0, 6.5, 202.9)">
+        🌾 Rice (Wetlands)
+      </button>
+      <button type="button" class="preset-chip" onclick="applyPreset(71, 54, 16, 22.6, 65.1, 5.7, 100.8)">
+        🌽 Maize (Plains)
+      </button>
+      <button type="button" class="preset-chip" onclick="applyPreset(107, 21, 31, 26.5, 58.1, 6.8, 158.4)">
+        ☕ Coffee (Hillshade)
+      </button>
+      <button type="button" class="preset-chip" onclick="applyPreset(99, 18, 50, 25.5, 88.0, 6.5, 49.8)">
+        🍉 Watermelon (Sandy)
+      </button>
+      <button type="button" class="preset-chip" onclick="applyPreset(24, 128, 196, 22.3, 92.3, 5.9, 110.7)">
+        🍏 Apple (Temperate)
+      </button>
+      <button type="button" class="preset-chip" onclick="applyPreset(118, 47, 20, 23.8, 79.5, 6.9, 80.4)">
+        ☁️ Cotton (Black Soil)
+      </button>
+    </div>
+  </div>
 
-    <div class="page">
-      <!-- Header -->
-      <header>
-        <div class="badge">🌱 AI-Powered Agriculture</div>
-        <h1>Smart Farming<br /><span>Crop Intelligence</span></h1>
-        <p class="subtitle">
-          Enter your soil & climate parameters to receive an optimized crop
-          recommendation powered by machine learning.
-        </p>
-      </header>
+  <!-- ─── Main Two-Column Layout ──────────────────────────────── -->
+  <main class="container" id="predictor">
+    <div class="main-grid">
 
-      <!-- Main grid: form + info panel -->
-      <div class="main-grid">
-        <!-- ── Prediction Form ── -->
-        <div class="card">
-          <div class="card-title">🧪 Soil & Climate Parameters</div>
+      <!-- ── Left Column: Prediction Form & Result ── -->
+      <section class="card">
+        <h2 class="card-title">🧪 Soil & Environmental Parameters</h2>
 
-          <form method="POST" action="/">
+        <form method="POST" action="/" id="prediction-form">
+          
+          <div class="form-row">
+            <!-- Nitrogen -->
             <div class="field">
-              <label><span class="field-icon">N</span>Nitrogen (N)</label>
-              <input
-                type="number"
-                name="nitrogen"
-                placeholder="e.g. 90"
-                min="0"
-                max="200"
-                required
-                value="{{ nitrogen }}"
-              />
+              <label for="nitrogen">
+                <span>Nitrogen (N)</span>
+                <span class="label-meta">0–200 kg/ha</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="input-icon">🌱</span>
+                <input
+                  type="number"
+                  id="nitrogen"
+                  name="nitrogen"
+                  placeholder="e.g. 90"
+                  min="0"
+                  max="200"
+                  step="0.1"
+                  required
+                  value="{{ nitrogen }}"
+                />
+              </div>
             </div>
+
+            <!-- Phosphorus -->
             <div class="field">
-              <label><span class="field-icon">P</span>Phosphorus (P)</label>
-              <input
-                type="number"
-                name="phosphorus"
-                placeholder="e.g. 42"
-                min="0"
-                max="200"
-                required
-                value="{{ phosphorus }}"
-              />
+              <label for="phosphorus">
+                <span>Phosphorus (P)</span>
+                <span class="label-meta">0–200 kg/ha</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="input-icon">🌿</span>
+                <input
+                  type="number"
+                  id="phosphorus"
+                  name="phosphorus"
+                  placeholder="e.g. 42"
+                  min="0"
+                  max="200"
+                  step="0.1"
+                  required
+                  value="{{ phosphorus }}"
+                />
+              </div>
             </div>
+          </div>
+
+          <div class="form-row">
+            <!-- Potassium -->
             <div class="field">
-              <label><span class="field-icon">K</span>Potassium (K)</label>
-              <input
-                type="number"
-                name="potassium"
-                placeholder="e.g. 43"
-                min="0"
-                max="200"
-                required
-                value="{{ potassium }}"
-              />
+              <label for="potassium">
+                <span>Potassium (K)</span>
+                <span class="label-meta">0–200 kg/ha</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="input-icon">🪵</span>
+                <input
+                  type="number"
+                  id="potassium"
+                  name="potassium"
+                  placeholder="e.g. 43"
+                  min="0"
+                  max="200"
+                  step="0.1"
+                  required
+                  value="{{ potassium }}"
+                />
+              </div>
             </div>
+
+            <!-- Temperature -->
             <div class="field">
-              <label><span class="field-icon">🌡</span>Temperature (°C)</label>
+              <label for="temperature">
+                <span>Temperature (°C)</span>
+                <span class="label-meta">-10 to 60 °C</span>
+              </label>
+              <div class="input-wrapper">
+                <span class="input-icon">🌡️</span>
+                <input
+                  type="number"
+                  id="temperature"
+                  name="temperature"
+                  step="0.1"
+                  placeholder="e.g. 25.5"
+                  min="-10"
+                  max="60"
+                  required
+                  value="{{ temperature }}"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Humidity -->
+          <div class="field">
+            <label for="humidity">
+              <span>Humidity (%)</span>
+              <span class="label-meta">Relative Humidity</span>
+            </label>
+            <div class="input-wrapper">
+              <span class="input-icon">💧</span>
               <input
                 type="number"
-                name="temperature"
+                id="humidity"
+                name="humidity"
                 step="0.1"
-                placeholder="e.g. 25.5"
-                min="-10"
-                max="60"
+                placeholder="e.g. 82.0"
+                min="0"
+                max="100"
                 required
-                value="{{ temperature }}"
+                value="{{ humidity }}"
+                oninput="syncSlider('humidity', 'humidity_range', 'humidity_val')"
               />
             </div>
-            <div class="field">
-              <label><span class="field-icon">💧</span>Humidity (%)</label>
-              <div class="range-group">
-                <input
-                  type="range"
-                  id="humidity_range"
-                  min="0"
-                  max="100"
-                  step="0.1"
-                  oninput="syncRange(this, 'humidity', 'humidity_val')"
-                />
-                <input
-                  type="number"
-                  id="humidity"
-                  name="humidity"
-                  step="0.1"
-                  placeholder="e.g. 80"
-                  min="0"
-                  max="100"
-                  required
-                  value="{{ humidity }}"
-                  style="width: 90px"
-                  oninput="syncNum(this, 'humidity_range', 'humidity_val')"
-                />
-                <span class="range-val" id="humidity_val"
-                  >{{ humidity or '—' }}</span
-                >
-              </div>
+            <div class="range-sync">
+              <input
+                type="range"
+                id="humidity_range"
+                min="0"
+                max="100"
+                step="0.5"
+                value="{{ humidity or 80 }}"
+                oninput="syncInput('humidity_range', 'humidity', 'humidity_val')"
+              />
+              <span class="range-display-badge" id="humidity_val">{{ humidity or '80' }}%</span>
             </div>
-            <div class="field">
-              <label><span class="field-icon">🧫</span>Soil pH</label>
-              <div class="range-group">
-                <input
-                  type="range"
-                  id="ph_range"
-                  min="0"
-                  max="14"
-                  step="0.1"
-                  oninput="syncRange(this, 'ph', 'ph_val')"
-                />
-                <input
-                  type="number"
-                  id="ph"
-                  name="ph"
-                  step="0.1"
-                  placeholder="e.g. 6.5"
-                  min="0"
-                  max="14"
-                  required
-                  value="{{ ph }}"
-                  style="width: 90px"
-                  oninput="syncNum(this, 'ph_range', 'ph_val')"
-                />
-                <span class="range-val" id="ph_val">{{ ph or '—' }}</span>
-              </div>
-            </div>
-            <div class="field">
-              <label><span class="field-icon">🌧</span>Rainfall (mm)</label>
+          </div>
+
+          <!-- Soil pH -->
+          <div class="field">
+            <label for="ph">
+              <span>Soil pH</span>
+              <span class="label-meta">0.0 (Acidic) to 14.0 (Alkaline)</span>
+            </label>
+            <div class="input-wrapper">
+              <span class="input-icon">🧫</span>
               <input
                 type="number"
+                id="ph"
+                name="ph"
+                step="0.1"
+                placeholder="e.g. 6.5"
+                min="0"
+                max="14"
+                required
+                value="{{ ph }}"
+                oninput="syncSlider('ph', 'ph_range', 'ph_val')"
+              />
+            </div>
+            <div class="range-sync">
+              <input
+                type="range"
+                id="ph_range"
+                min="0"
+                max="14"
+                step="0.1"
+                value="{{ ph or 6.5 }}"
+                oninput="syncInput('ph_range', 'ph', 'ph_val')"
+              />
+              <span class="range-display-badge" id="ph_val">{{ ph or '6.5' }}</span>
+            </div>
+          </div>
+
+          <!-- Rainfall -->
+          <div class="field">
+            <label for="rainfall">
+              <span>Annual Rainfall (mm)</span>
+              <span class="label-meta">Precipitation</span>
+            </label>
+            <div class="input-wrapper">
+              <span class="input-icon">🌧️</span>
+              <input
+                type="number"
+                id="rainfall"
                 name="rainfall"
                 step="0.1"
-                placeholder="e.g. 202"
+                placeholder="e.g. 202.9"
                 min="0"
                 required
                 value="{{ rainfall }}"
               />
             </div>
+          </div>
 
-            <button type="submit" class="btn">⚡ Predict Best Crop</button>
-          </form>
+          <div class="form-actions">
+            <button type="submit" class="btn-submit" id="submit-btn">
+              <span>⚡ Predict Optimal Crop</span>
+            </button>
+            <button type="button" class="btn-reset" onclick="resetForm()">
+              Clear
+            </button>
+          </div>
+        </form>
 
-          {% if prediction_text %}
-          <div
-            class="result-box {% if '✅' in prediction_text %}result-success{% else %}result-error{% endif %}"
-          >
-            {% if '✅' in prediction_text %}
-            <div>
-              <div
-                style="
-                  font-size: 0.75rem;
-                  text-transform: uppercase;
-                  letter-spacing: 0.1em;
-                  color: var(--muted);
-                  margin-bottom: 4px;
-                "
-              >
-                Recommended Crop
+        <!-- Prediction Result Card -->
+        {% if prediction_text %}
+        <div class="result-container">
+          {% if '✅' in prediction_text and crop_info %}
+          <div class="result-card-success">
+            <div class="result-header">
+              <span class="result-tag">Recommended Crop</span>
+              {% if confidence %}
+              <span class="result-tag" style="background:#d8f3dc; color:var(--primary-dark);">
+                🎯 {{ confidence }}% Match Confidence
+              </span>
+              {% endif %}
+            </div>
+
+            <div class="result-crop-name">
+              <span>{{ crop_info.emoji }}</span>
+              <span>{{ crop_info.name }}</span>
+            </div>
+
+            {% if confidence %}
+            <div class="confidence-meter">
+              <div class="confidence-label">
+                <span>Model Confidence</span>
+                <span>{{ confidence }}%</span>
               </div>
-              <div class="result-crop">
-                🌾 {{ prediction_text | replace('✅ Recommended Crop: ', '') }}
+              <div class="progress-track">
+                <div class="progress-fill" style="width: {{ confidence }}%;"></div>
               </div>
             </div>
-            {% else %} ⚠️ {{ prediction_text | replace('⚠️ ', '') }} {% endif %}
+            {% endif %}
+
+            <div class="crop-profile-grid">
+              <div class="profile-item">
+                <div class="profile-item-title">Category</div>
+                <div class="profile-item-value">{{ crop_info.category }}</div>
+              </div>
+              <div class="profile-item">
+                <div class="profile-item-title">Ideal Season</div>
+                <div class="profile-item-value">{{ crop_info.season }}</div>
+              </div>
+              <div class="profile-item">
+                <div class="profile-item-title">Water Requirement</div>
+                <div class="profile-item-value">{{ crop_info.water }}</div>
+              </div>
+              <div class="profile-item">
+                <div class="profile-item-title">Soil Compatibility</div>
+                <div class="profile-item-value">{{ crop_info.soil }}</div>
+              </div>
+            </div>
+
+            <div class="farming-tip-box">
+              <strong>💡 Agronomist Tip:</strong> {{ crop_info.tip }}
+            </div>
+          </div>
+          {% else %}
+          <div class="result-box result-error" style="background:#fff3eb; border:1.5px solid #f97316; color:#9a3412; padding:18px; border-radius:12px;">
+            {{ prediction_text }}
           </div>
           {% endif %}
         </div>
-
-        <!-- ── Info / Guide Panel ── -->
-        <div>
-          <div class="card" style="margin-bottom: 24px">
-            <div class="card-title">📖 Parameter Guide</div>
-            <div class="stats-grid">
-              <div class="stat-chip">
-                <span class="val">0–200</span
-                ><span class="lbl">N, P, K (kg/ha)</span>
-              </div>
-              <div class="stat-chip">
-                <span class="val">0–14</span><span class="lbl">pH Range</span>
-              </div>
-              <div class="stat-chip">
-                <span class="val">0–100%</span><span class="lbl">Humidity</span>
-              </div>
-            </div>
-            <ul
-              style="
-                list-style: none;
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-              "
-            >
-              <li
-                style="
-                  display: flex;
-                  gap: 10px;
-                  align-items: flex-start;
-                  font-size: 0.88rem;
-                  color: var(--muted);
-                "
-              >
-                <span>🌿</span
-                ><span
-                  ><strong style="color: var(--text)">NPK values</strong>
-                  represent macronutrient content in your soil. Test your soil
-                  with a kit for accuracy.</span
-                >
-              </li>
-              <li
-                style="
-                  display: flex;
-                  gap: 10px;
-                  align-items: flex-start;
-                  font-size: 0.88rem;
-                  color: var(--muted);
-                "
-              >
-                <span>🌡️</span
-                ><span
-                  ><strong style="color: var(--text)">Temperature</strong> is
-                  the average annual temperature of your region in °C.</span
-                >
-              </li>
-              <li
-                style="
-                  display: flex;
-                  gap: 10px;
-                  align-items: flex-start;
-                  font-size: 0.88rem;
-                  color: var(--muted);
-                "
-              >
-                <span>🧫</span
-                ><span
-                  ><strong style="color: var(--text)">pH 6–7</strong> is ideal
-                  for most crops. Below 6 is acidic; above 7 is alkaline.</span
-                >
-              </li>
-              <li
-                style="
-                  display: flex;
-                  gap: 10px;
-                  align-items: flex-start;
-                  font-size: 0.88rem;
-                  color: var(--muted);
-                "
-              >
-                <span>🌧️</span
-                ><span
-                  ><strong style="color: var(--text)">Rainfall</strong> is
-                  average annual precipitation in millimetres.</span
-                >
-              </li>
-            </ul>
-          </div>
-
-          <div class="card">
-            <div class="card-title">🤖 How It Works</div>
-            <div style="display: flex; flex-direction: column; gap: 14px">
-              {% for step in [ ('1', '🌍', 'Collect Parameters', 'Enter your
-              soil nutrients, temperature, humidity, pH, and rainfall.'), ('2',
-              '🧠', 'ML Inference', 'A Random Forest model trained on 2200+
-              samples evaluates your data.'), ('3', '🌾', 'Get Recommendation',
-              'The model outputs the crop most likely to thrive in your
-              conditions.') ] %}
-              <div style="display: flex; gap: 12px; align-items: flex-start">
-                <div
-                  style="
-                    min-width: 28px;
-                    height: 28px;
-                    border-radius: 50%;
-                    background: var(--leaf);
-                    color: #fff;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 0.75rem;
-                    font-weight: 700;
-                  "
-                >
-                  {{ step[0] }}
-                </div>
-                <div>
-                  <div
-                    style="
-                      font-weight: 500;
-                      font-size: 0.9rem;
-                      margin-bottom: 2px;
-                    "
-                  >
-                    {{ step[2] }}
-                  </div>
-                  <div style="font-size: 0.82rem; color: var(--muted)">
-                    {{ step[3] }}
-                  </div>
-                </div>
-              </div>
-              {% endfor %}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Charts Section -->
-      <div class="charts-section">
-        <div class="section-head">
-          <h2>📊 Dataset Insights</h2>
-          <p>Visualisations generated from the crop recommendation dataset</p>
-        </div>
-
-        {% if prediction_text and '✅' in prediction_text %}
-        <!-- Charts rendered after first successful prediction -->
-        <div class="charts-grid">
-          {% set chart_labels = [ 'Nitrogen Distribution', 'Phosphorus
-          Distribution', 'Potassium Distribution', 'Temperature Distribution',
-          'Humidity Distribution', 'pH Distribution', 'Rainfall Distribution',
-          'Temperature vs Humidity', 'pH vs Rainfall', 'Feature Correlation
-          Heatmap' ] %} {% for i in range(1, 11) %}
-          <div class="chart-card">
-            <div class="chart-label">{{ chart_labels[i-1] }}</div>
-            <img
-              src="{{ url_for('static', filename='chart' ~ i ~ '.png') }}"
-              alt="{{ chart_labels[i-1] }}"
-              loading="lazy"
-              onerror="this.closest('.chart-card').style.display = 'none'"
-            />
-          </div>
-          {% endfor %}
-        </div>
-
-        {% else %}
-        <!-- Placeholder shown before any prediction is made -->
-        <div class="charts-placeholder">
-          <span class="ph-icon">📈</span>
-          <p>
-            Charts will appear here after your
-            <strong>first prediction</strong>.<br />
-            Fill in the form above and click
-            <strong>⚡ Predict Best Crop</strong> to generate the dataset
-            visualisations.
-          </p>
-        </div>
         {% endif %}
-      </div>
-    </div>
-    <!-- /page -->
+      </section>
 
-    <!-- ─── Chatbot ──────────────────────────────────────── -->
-    <div class="chat-fab">
-      <div class="chat-window" id="chatWindow">
-        <div class="chat-header">
-          <div class="chat-dot"></div>
-          FarmBot — Farming Assistant
+      <!-- ── Right Column: Parameter Guide & Workflow ── -->
+      <aside>
+        <div class="card" id="guide" style="margin-bottom: 24px;">
+          <h2 class="card-title">📖 Soil & Climate Guide</h2>
+          
+          <div class="guide-stats-grid">
+            <div class="guide-chip">
+              <span class="guide-chip-val">0–200</span>
+              <span class="guide-chip-lbl">NPK (kg/ha)</span>
+            </div>
+            <div class="guide-chip">
+              <span class="guide-chip-val">6.0–7.2</span>
+              <span class="guide-chip-lbl">Ideal pH</span>
+            </div>
+            <div class="guide-chip">
+              <span class="guide-chip-val">22 Crops</span>
+              <span class="guide-chip-lbl">Supported</span>
+            </div>
+          </div>
+
+          <ul class="guide-list">
+            <li class="guide-list-item">
+              <span class="guide-list-icon">🌿</span>
+              <span><strong>Nitrogen (N):</strong> Promotes leafy growth and vegetative vigor. Deficiency causes pale yellow older leaves.</span>
+            </li>
+            <li class="guide-list-item">
+              <span class="guide-list-icon">🌱</span>
+              <span><strong>Phosphorus (P):</strong> Stimulates root establishment, flower blooming, and seed development.</span>
+            </li>
+            <li class="guide-list-item">
+              <span class="guide-list-icon">🪵</span>
+              <span><strong>Potassium (K):</strong> Regulates water balance, disease resistance, and stem rigidity.</span>
+            </li>
+            <li class="guide-list-item">
+              <span class="guide-list-icon">🌡️</span>
+              <span><strong>Temperature & Climate:</strong> Dictates metabolic rates and photosaturation thresholds.</span>
+            </li>
+            <li class="guide-list-item">
+              <span class="guide-list-icon">🧫</span>
+              <span><strong>Soil pH:</strong> Governs nutrient bioavailability. Below 6.0 is acidic; above 7.5 is alkaline.</span>
+            </li>
+          </ul>
         </div>
-        <div class="chat-messages" id="chatMessages">
-          <div class="msg bot">
-            Hello! 👋 I'm FarmBot. Ask me anything about crops, soil,
-            fertilizers, or irrigation!
+
+        <div class="card">
+          <h2 class="card-title">⚙️ Machine Learning Pipeline</h2>
+          <div class="workflow-steps">
+            <div class="step-item">
+              <div class="step-num">1</div>
+              <div>
+                <div class="step-content-title">Data Gathering & Preprocessing</div>
+                <div class="step-content-desc">2,200 curated field records across 22 crop classes with stratified train-test splits.</div>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">2</div>
+              <div>
+                <div class="step-content-title">Random Forest Classifier</div>
+                <div class="step-content-desc">100 ensemble decision trees evaluating non-linear feature interactions with >99.5% accuracy.</div>
+              </div>
+            </div>
+            <div class="step-item">
+              <div class="step-num">3</div>
+              <div>
+                <div class="step-content-title">Actionable Recommendation</div>
+                <div class="step-content-desc">Outputs optimal crop suggestion with probability confidence and tailored agronomic guidance.</div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="chat-input-row">
-          <input
-            type="text"
-            id="chatInput"
-            placeholder="Ask something…"
-            onkeydown="if (event.key === 'Enter') sendChat();"
-          />
-          <button class="chat-send" onclick="sendChat()">➤</button>
-        </div>
-      </div>
-      <button id="chat-toggle" onclick="toggleChat()" title="Open FarmBot">
-        🌱
-      </button>
+      </aside>
+
     </div>
 
-    <script>
-      /* ── Range / number sync ── */
-      function syncRange(range, numId, valId) {
-        document.getElementById(numId).value = range.value;
-        document.getElementById(valId).textContent = range.value;
-      }
-      function syncNum(num, rangeId, valId) {
-        document.getElementById(rangeId).value = num.value;
-        document.getElementById(valId).textContent = num.value || "—";
-      }
+    <!-- ─── Dataset Insights & Charts Section ───────────────────── -->
+    <section class="charts-section" id="insights">
+      <div class="section-head">
+        <h2>📊 Dataset Distribution Insights</h2>
+        <p>Exploratory data analysis of soil chemistry, climate variables, and crop distributions</p>
+      </div>
 
-      /* ── Init range thumbs from existing values ── */
-      ["humidity", "ph"].forEach((id) => {
-        const n = document.getElementById(id);
-        const r = document.getElementById(id + "_range");
-        const v = document.getElementById(id + "_val");
-        if (n && n.value) {
-          r.value = n.value;
-          v.textContent = n.value;
+      <div class="charts-grid">
+        {% set chart_titles = [
+          'Nitrogen (N) Distribution',
+          'Phosphorus (P) Distribution',
+          'Potassium (K) Distribution',
+          'Temperature Distribution (°C)',
+          'Humidity Distribution (%)',
+          'Soil pH Distribution',
+          'Annual Rainfall Distribution (mm)',
+          'Temperature vs Humidity Scatter',
+          'pH vs Rainfall Correlation',
+          'Feature Correlation Heatmap'
+        ] %}
+        {% for i in range(1, 11) %}
+        <div class="chart-card" onclick="openLightbox('{{ url_for('static', filename='chart' ~ i ~ '.png') }}', '{{ chart_titles[i-1] }}')">
+          <div class="chart-header">
+            <span class="chart-title">{{ chart_titles[i-1] }}</span>
+            <span class="chart-zoom-icon">🔍 Click to zoom</span>
+          </div>
+          <img
+            src="{{ url_for('static', filename='chart' ~ i ~ '.png') }}"
+            alt="{{ chart_titles[i-1] }}"
+            loading="lazy"
+          />
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+
+  <!-- ─── Image Lightbox Modal ────────────────────────────────── -->
+  <div class="lightbox-modal" id="lightboxModal" onclick="closeLightbox(event)">
+    <div class="lightbox-content">
+      <button type="button" class="lightbox-close" onclick="closeLightboxDirect()">✕</button>
+      <img id="lightboxImg" src="" alt="Expanded Chart" />
+    </div>
+  </div>
+
+  <!-- ─── Floating FarmBot AI Assistant ───────────────────────── -->
+  <div class="chat-fab">
+    <div class="chat-window" id="chatWindow">
+      <div class="chat-header">
+        <div class="chat-title-group">
+          <div class="chat-status-dot"></div>
+          <div>
+            <div style="font-weight: 700; font-size: 0.95rem;">FarmBot Assistant</div>
+            <div style="font-size: 0.72rem; opacity: 0.85;">Smart Farming AI Online</div>
+          </div>
+        </div>
+        <button type="button" class="chat-close-btn" onclick="toggleChat()">✕</button>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg bot">
+          Hello! 👋 I'm <strong>FarmBot</strong>, your smart farming advisor. Ask me about crops, soil nutrients (NPK), fertilizer rates, soil pH, or smart irrigation!
+        </div>
+      </div>
+
+      <div class="typing-indicator" id="typingIndicator">
+        FarmBot is thinking...
+      </div>
+
+      <div class="chat-quick-pills">
+        <span class="quick-pill" onclick="quickAsk('Which crop should I grow?')">🌾 Recommend crop</span>
+        <span class="quick-pill" onclick="quickAsk('What is good soil pH?')">🧫 Ideal pH</span>
+        <span class="quick-pill" onclick="quickAsk('What does Nitrogen do?')">🌱 Nitrogen</span>
+        <span class="quick-pill" onclick="quickAsk('How to save water with irrigation?')">💧 Irrigation</span>
+      </div>
+
+      <div class="chat-input-row">
+        <input
+          type="text"
+          id="chatInput"
+          placeholder="Ask FarmBot anything about crops..."
+          autocomplete="off"
+          onkeydown="if (event.key === 'Enter') sendChat();"
+        />
+        <button type="button" class="chat-send-btn" onclick="sendChat()" title="Send Message">➤</button>
+      </div>
+    </div>
+
+    <button id="chat-toggle" onclick="toggleChat()" title="Chat with FarmBot">
+      🌱
+    </button>
+  </div>
+
+  <!-- ─── Footer ──────────────────────────────────────────────── -->
+  <footer>
+    <div class="footer-content">
+      <div>
+        <div class="footer-brand">🌱 CropIQ Intelligence</div>
+        <p class="footer-desc">
+          An open-source precision agriculture system predicting optimal crop varieties using Machine Learning. Developed for research, agricultural extension workers, and sustainable farming worldwide.
+        </p>
+      </div>
+      <div>
+        <div class="footer-col-title">Navigation</div>
+        <ul class="footer-links">
+          <li><a href="#predictor">Crop Predictor</a></li>
+          <li><a href="#presets">1-Click Test Presets</a></li>
+          <li><a href="#guide">Parameter Guide</a></li>
+          <li><a href="#insights">Dataset Insights</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Open Source</div>
+        <ul class="footer-links">
+          <li><a href="https://github.com/AJANYA-K-A/Smart-farming-crop-recommendation-system-Machine-learning" target="_blank" rel="noopener noreferrer">GitHub Repository</a></li>
+          <li><a href="https://github.com/AJANYA-K-A/Smart-farming-crop-recommendation-system-Machine-learning/blob/main/Crop_recommendation.csv" target="_blank" rel="noopener noreferrer">Dataset (CSV)</a></li>
+          <li><a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html" target="_blank" rel="noopener noreferrer">Random Forest Model</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>
+        &copy; 2026 Smart Farming Crop Recommendation System. Open source under MIT License.
+      </div>
+      <div>
+        Designed & Maintained by <a href="https://github.com/AJANYA-K-A" target="_blank" style="color:var(--primary-light); text-decoration:none; font-weight:700;">AJANYA K A</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ─── Client Scripts ──────────────────────────────────────── -->
+  <script>
+    /* ── Range & Number Inputs Dual Sync ── */
+    function syncSlider(numId, rangeId, badgeId) {
+      const numInput = document.getElementById(numId);
+      const rangeInput = document.getElementById(rangeId);
+      const badge = document.getElementById(badgeId);
+      if (numInput && rangeInput) {
+        rangeInput.value = numInput.value;
+        badge.textContent = numInput.value + (numId === 'humidity' ? '%' : '');
+      }
+    }
+
+    function syncInput(rangeId, numId, badgeId) {
+      const rangeInput = document.getElementById(rangeId);
+      const numInput = document.getElementById(numId);
+      const badge = document.getElementById(badgeId);
+      if (rangeInput && numInput) {
+        numInput.value = rangeInput.value;
+        badge.textContent = rangeInput.value + (numId === 'humidity' ? '%' : '');
+      }
+    }
+
+    /* ── Quick Preset Autofill ── */
+    function applyPreset(n, p, k, temp, hum, ph, rain) {
+      document.getElementById('nitrogen').value = n;
+      document.getElementById('phosphorus').value = p;
+      document.getElementById('potassium').value = k;
+      document.getElementById('temperature').value = temp;
+      document.getElementById('humidity').value = hum;
+      document.getElementById('ph').value = ph;
+      document.getElementById('rainfall').value = rain;
+
+      syncSlider('humidity', 'humidity_range', 'humidity_val');
+      syncSlider('ph', 'ph_range', 'ph_val');
+
+      // Smooth scroll to form submit button
+      document.getElementById('prediction-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function resetForm() {
+      document.getElementById('prediction-form').reset();
+      document.getElementById('humidity_val').textContent = '80%';
+      document.getElementById('ph_val').textContent = '6.5';
+    }
+
+    /* ── Lightbox Modal for Chart Zoom ── */
+    function openLightbox(src, title) {
+      const modal = document.getElementById('lightboxModal');
+      const img = document.getElementById('lightboxImg');
+      img.src = src;
+      img.alt = title;
+      modal.classList.add('active');
+    }
+
+    function closeLightbox(event) {
+      if (event.target.id === 'lightboxModal') {
+        document.getElementById('lightboxModal').classList.remove('active');
+      }
+    }
+
+    function closeLightboxDirect() {
+      document.getElementById('lightboxModal').classList.remove('active');
+    }
+
+    /* ── Connected FarmBot Chatbot ── */
+    function toggleChat() {
+      const win = document.getElementById('chatWindow');
+      win.classList.toggle('open');
+      if (win.classList.contains('open')) {
+        document.getElementById('chatInput').focus();
+      }
+    }
+
+    function quickAsk(text) {
+      document.getElementById('chatInput').value = text;
+      sendChat();
+    }
+
+    async function sendChat() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const msgs = document.getElementById('chatMessages');
+      const typing = document.getElementById('typingIndicator');
+
+      // Add user message
+      msgs.innerHTML += `<div class="msg user">${escapeHtml(text)}</div>`;
+      input.value = '';
+      msgs.scrollTop = msgs.scrollHeight;
+
+      // Show typing indicator
+      typing.style.display = 'block';
+      msgs.scrollTop = msgs.scrollHeight;
+
+      try {
+        // Send request to Flask backend /chat route
+        const response = await fetch('/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
         }
-      });
 
-      /* ── Chatbot ── */
-      const responses = {
-        hello: "Hi there! How can I assist you with farming today?",
-        hi: "Hello! Need help with crops or irrigation?",
-        "what crop should i grow":
-          "Use the prediction form on this page — enter your soil and climate data to get a personalised recommendation!",
-        "which fertilizer is good":
-          "It depends on your soil type and crop. Common choices are Urea (N), DAP (P), and NPK blends.",
-        "how to protect crops from pests":
-          "Integrated pest management (IPM), crop rotation, companion planting, and targeted pesticide use all help.",
-        "what is smart irrigation":
-          "Smart irrigation uses sensors and automation to apply the right amount of water at the right time.",
-        nitrogen:
-          "Nitrogen promotes leafy, green growth. Deficiency shows as yellowing of older leaves.",
-        phosphorus:
-          "Phosphorus supports root development and flowering. It's especially important early in a crop's lifecycle.",
-        potassium:
-          "Potassium strengthens stems and improves drought resistance and disease tolerance.",
-        ph: "Most crops thrive in a pH of 6–7. Add lime to raise pH, or sulfur to lower it.",
-        rainfall:
-          "Adequate rainfall ensures nutrient uptake. Supplement with irrigation during dry spells.",
-        temperature:
-          "Each crop has an optimal temperature range. Most cereals prefer 15–25 °C.",
-        "thank you": "You're welcome! Happy farming! 🌾",
-        bye: "Goodbye! Feel free to return anytime.",
-      };
-
-      function getReply(input) {
-        input = input.toLowerCase();
-        for (const key in responses)
-          if (input.includes(key)) return responses[key];
-        return "I'm not sure about that. Try asking about crops, fertilizers, pH, or irrigation!";
+        const data = await response.json();
+        typing.style.display = 'none';
+        msgs.innerHTML += `<div class="msg bot">${escapeHtml(data.reply)}</div>`;
+      } catch (err) {
+        typing.style.display = 'none';
+        // Graceful fallback response
+        msgs.innerHTML += `<div class="msg bot">I encountered a temporary connection issue. For crop recommendations, feel free to use the form above!</div>`;
       }
 
-      function sendChat() {
-        const inp = document.getElementById("chatInput");
-        const msgs = document.getElementById("chatMessages");
-        const text = inp.value.trim();
-        if (!text) return;
-        msgs.innerHTML += `<div class="msg user">${text}</div>`;
-        setTimeout(() => {
-          msgs.innerHTML += `<div class="msg bot">${getReply(text)}</div>`;
-          msgs.scrollTop = msgs.scrollHeight;
-        }, 300);
-        inp.value = "";
-        msgs.scrollTop = msgs.scrollHeight;
-      }
+      msgs.scrollTop = msgs.scrollHeight;
+    }
 
-      function toggleChat() {
-        document.getElementById("chatWindow").classList.toggle("open");
-      }
-    </script>
-  </body>
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
+</body>
 </html>
