@@ -1184,7 +1184,6 @@
                     max="200"
                     step="0.1"
                     required
-                    value="90"
                   />
                 </div>
               </div>
@@ -1205,7 +1204,6 @@
                     max="200"
                     step="0.1"
                     required
-                    value="42"
                   />
                 </div>
               </div>
@@ -1228,7 +1226,6 @@
                     max="200"
                     step="0.1"
                     required
-                    value="43"
                   />
                 </div>
               </div>
@@ -1249,7 +1246,6 @@
                     min="-10"
                     max="60"
                     required
-                    value="20.9"
                   />
                 </div>
               </div>
@@ -1272,7 +1268,6 @@
                   min="0"
                   max="100"
                   required
-                  value="82.0"
                   oninput="syncSlider('humidity', 'humidity_range', 'humidity_badge')"
                 />
               </div>
@@ -1283,10 +1278,10 @@
                   min="0"
                   max="100"
                   step="0.5"
-                  value="82.0"
+                  value="50"
                   oninput="syncInput('humidity_range', 'humidity', 'humidity_badge')"
                 />
-                <span class="range-badge" id="humidity_badge">82.0%</span>
+                <span class="range-badge" id="humidity_badge">--%</span>
               </div>
             </div>
 
@@ -1307,7 +1302,6 @@
                   min="0"
                   max="14"
                   required
-                  value="6.5"
                   oninput="syncSlider('ph', 'ph_range', 'ph_badge')"
                 />
               </div>
@@ -1318,10 +1312,10 @@
                   min="0"
                   max="14"
                   step="0.1"
-                  value="6.5"
+                  value="7.0"
                   oninput="syncInput('ph_range', 'ph', 'ph_badge')"
                 />
-                <span class="range-badge" id="ph_badge">6.5</span>
+                <span class="range-badge" id="ph_badge">--</span>
               </div>
             </div>
 
@@ -1341,7 +1335,6 @@
                   placeholder="e.g. 202.9"
                   min="0"
                   required
-                  value="202.9"
                 />
               </div>
             </div>
@@ -1360,10 +1353,10 @@
           <div class="result-panel">
             <div class="result-idle-state" id="resultIdle">
               <span class="result-idle-icon">🌱</span>
-              <p><strong>Awaiting Prediction:</strong> Click <em>Run AI Crop Prediction</em> or select a 1-Click Preset to evaluate optimal conditions.</p>
+              <p><strong>Awaiting Prediction:</strong> Enter your soil &amp; climate parameters above (or choose a 1-Click Preset) and click <em>Run AI Crop Prediction</em> to evaluate optimal crops.</p>
             </div>
 
-            <div class="result-active-card" id="resultCard">
+            <div class="result-active-card" id="resultCard" style="display: none;">
               <div class="res-top-bar">
                 <span class="res-badge">Optimal Recommendation</span>
                 <span class="res-confidence-badge" id="resConfidenceBadge">98.5% Match Confidence</span>
@@ -1679,13 +1672,18 @@
     }
 
     /* ── Dual Range Sliders Sync ── */
+    /* ── Dual Range Sliders Sync ── */
     function syncSlider(numId, rangeId, badgeId) {
       const numInput = document.getElementById(numId);
       const rangeInput = document.getElementById(rangeId);
       const badge = document.getElementById(badgeId);
       if (numInput && rangeInput) {
-        rangeInput.value = numInput.value;
-        badge.textContent = numInput.value + (numId === 'humidity' ? '%' : '');
+        if (numInput.value !== '') {
+          rangeInput.value = numInput.value;
+          badge.textContent = numInput.value + (numId === 'humidity' ? '%' : '');
+        } else {
+          badge.textContent = numId === 'humidity' ? '--%' : '--';
+        }
       }
     }
 
@@ -1718,8 +1716,8 @@
 
     function clearForm() {
       document.getElementById('predictionForm').reset();
-      document.getElementById('humidity_badge').textContent = '82.0%';
-      document.getElementById('ph_badge').textContent = '6.5';
+      document.getElementById('humidity_badge').textContent = '--%';
+      document.getElementById('ph_badge').textContent = '--';
       document.getElementById('resultIdle').style.display = 'block';
       document.getElementById('resultCard').style.display = 'none';
     }
@@ -1728,19 +1726,38 @@
     async function handlePrediction(event) {
       if (event) event.preventDefault();
 
+      const form = document.getElementById('predictionForm');
+      if (form && !form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      const nVal = document.getElementById('nitrogen').value.trim();
+      const pVal = document.getElementById('phosphorus').value.trim();
+      const kVal = document.getElementById('potassium').value.trim();
+      const tVal = document.getElementById('temperature').value.trim();
+      const hVal = document.getElementById('humidity').value.trim();
+      const phVal = document.getElementById('ph').value.trim();
+      const rVal = document.getElementById('rainfall').value.trim();
+
+      if (!nVal || !pVal || !kVal || !tVal || !hVal || !phVal || !rVal) {
+        if (form) form.reportValidity();
+        return;
+      }
+
       const btn = document.getElementById('predictBtn');
       const originalText = btn.innerHTML;
       btn.innerHTML = '<span>⏳ Evaluating Conditions...</span>';
       btn.disabled = true;
 
       const payload = {
-        nitrogen: parseFloat(document.getElementById('nitrogen').value) || 0,
-        phosphorus: parseFloat(document.getElementById('phosphorus').value) || 0,
-        potassium: parseFloat(document.getElementById('potassium').value) || 0,
-        temperature: parseFloat(document.getElementById('temperature').value) || 0,
-        humidity: parseFloat(document.getElementById('humidity').value) || 0,
-        ph: parseFloat(document.getElementById('ph').value) || 0,
-        rainfall: parseFloat(document.getElementById('rainfall').value) || 0
+        nitrogen: parseFloat(nVal) || 0,
+        phosphorus: parseFloat(pVal) || 0,
+        potassium: parseFloat(kVal) || 0,
+        temperature: parseFloat(tVal) || 0,
+        humidity: parseFloat(hVal) || 0,
+        ph: parseFloat(phVal) || 0,
+        rainfall: parseFloat(rVal) || 0
       };
 
       try {
@@ -1870,9 +1887,10 @@
       return d.innerHTML;
     }
 
-    // Auto-run initial prediction on load with default preset
+    // Keep clean initial state on load; predictions run only after user submits or selects preset
     window.addEventListener('DOMContentLoaded', () => {
-      handlePrediction();
+      document.getElementById('resultIdle').style.display = 'block';
+      document.getElementById('resultCard').style.display = 'none';
     });
   </script>
 </body>
